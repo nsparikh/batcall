@@ -27,6 +27,11 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson.JacksonFactory;
 
+/**
+ * Displays the user's nearby places using the Google Places API.
+ * @author neenaparikh
+ *
+ */
 public class NearbyPlacesActivity extends Activity {
 	
 	// Location manager and listener for getting current location
@@ -100,6 +105,7 @@ public class NearbyPlacesActivity extends Activity {
 		HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
         HttpRequest request;
 		try {
+			// Send request to Google Places API
 			request = httpRequestFactory.buildGetRequest(new GenericUrl(PLACES_SEARCH_URL));
 			
 			request.getUrl().put("key", API_KEY);
@@ -117,6 +123,7 @@ public class NearbyPlacesActivity extends Activity {
 		}
         
 	}
+
 	
 	/**
 	 * @param transport
@@ -160,7 +167,7 @@ public class NearbyPlacesActivity extends Activity {
          **/
         @Override
         protected String doInBackground(String... args) {
-        	nearbyPlacesList = getNearbyPlaces(currentLocation, RADIUS, TYPES).results;
+        	nearbyPlacesList = getNearbyPlaces(currentLocation, RADIUS, TYPES).getPlaceList();
         	return null;
         }
         
@@ -170,7 +177,7 @@ public class NearbyPlacesActivity extends Activity {
          */
         @Override
         protected void onPostExecute(String result) {
-        	//pDialog.dismiss();
+        	//TODO: pDialog.dismiss();
         	
         	// Update the UI thread
         	runOnUiThread(new Runnable() {
