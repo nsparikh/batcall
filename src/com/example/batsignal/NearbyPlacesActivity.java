@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.batsignal.model.Place;
 import com.example.batsignal.model.PlaceList;
@@ -38,6 +39,7 @@ public class NearbyPlacesActivity extends Activity {
 	private LocationManager mLocationManager;
 	private LocationListener mLocationListener;
 	private Location currentLocation;
+	private String currentAddress;
 	
 	// List of nearby places
 	private List<Place> nearbyPlacesList = new ArrayList<Place>();
@@ -45,8 +47,9 @@ public class NearbyPlacesActivity extends Activity {
 	// API key for maps
 	private static final String API_KEY = "AIzaSyB84Arz4_WbBVKIdkYvF5rpzaynKip71UM";
 	
-	// URL for Places API
+	// URL Sfor Places / Maps APIs
 	private static final String PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/search/json?";
+	private static final String REVERSE_GEOCODE_URL = "https://maps.google.com/maps/api/geocode/json?";
 
 	// Global instance of the HTTP transport
 	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -96,16 +99,16 @@ public class NearbyPlacesActivity extends Activity {
 
 	/**
 	 * @return a PlaceList object which is a list of nearby places
-	 * @throws IOException 
 	 */
 	private PlaceList getNearbyPlaces(Location location, double radius, String types) {
 		double latitude = location.getLatitude();
 		double longitude = location.getLongitude();
 		
+		// Initialize HTTP request
 		HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
         HttpRequest request;
 		try {
-			// Send request to Google Places API
+			// Send request to Google Places API with location, radius, and place types
 			request = httpRequestFactory.buildGetRequest(new GenericUrl(PLACES_SEARCH_URL));
 			
 			request.getUrl().put("key", API_KEY);
@@ -122,6 +125,35 @@ public class NearbyPlacesActivity extends Activity {
 			return null;
 		}
         
+	}
+	
+	/**
+	 * @return a formatted address corresponding to the current location (lat/lng)
+	 */
+	private String getAddressFromLocation(Location location) {
+		double latitude = location.getLatitude();
+		double longitude = location.getLongitude();
+
+		// Initialize HTTP request
+		HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
+		HttpRequest request;
+		
+		// Send request to Google Maps API to get address from location
+		try {
+			request = httpRequestFactory.buildGetRequest(new GenericUrl(REVERSE_GEOCODE_URL));
+			request.getUrl().put("latlng", latitude + "," + longitude);
+			request.getUrl().put("sensor", "false");
+			
+			PlaceList responseList = request.execute().parseAs(PlaceList.class);
+			if (responseList.getPlaceList().size() > 0) return responseList.getPlaceList().get(0).getAddress();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+		return "";
 	}
 
 	
@@ -168,6 +200,7 @@ public class NearbyPlacesActivity extends Activity {
         @Override
         protected String doInBackground(String... args) {
         	nearbyPlacesList = getNearbyPlaces(currentLocation, RADIUS, TYPES).getPlaceList();
+        	currentAddress = getAddressFromLocation(currentLocation);
         	return null;
         }
         
@@ -182,10 +215,18 @@ public class NearbyPlacesActivity extends Activity {
         	// Update the UI thread
         	runOnUiThread(new Runnable() {
         		public void run() {
+        			
+        			// Display current address, if any
+        			if (currentAddress.length() > 0) {
+        				TextView currentAddressTextView = (TextView) findViewById(R.id.current_address_text_view);
+        				currentAddressTextView.setText("Current Location: " + currentAddress);
+        			}
+
         			// Bind the list of nearby places to the list view
         			ListView nearbyListView = (ListView) findViewById(R.id.nearby_list_view);
         			nearbyListView.setAdapter(new ArrayAdapter<Place>
         				(NearbyPlacesActivity.this, android.R.layout.simple_list_item_1, nearbyPlacesList));
+        			
         		}
         	});
         }

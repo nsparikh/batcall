@@ -15,6 +15,9 @@ public class Place implements Parcelable {
 	@Key("name")
 	private String name;
 	
+	@Key("formatted_address")
+	private String address;
+	
 	@Key("reference")
 	private String reference;
 	
@@ -64,9 +67,10 @@ public class Place implements Parcelable {
 	 * @param latitude
 	 * @param longitude
 	 **/
-	public Place(String id, String name, String reference, double latitude, double longitude) {
+	public Place(String id, String name, String address, String reference, double latitude, double longitude) {
 		this.id = id;
 		this.name = name;
+		this.address = address;
 		this.reference = reference;
 		this.geometry = new MyGeometry();
 		this.geometry.location.latitude = latitude;
@@ -79,6 +83,7 @@ public class Place implements Parcelable {
 	public Place() {
 		this.id = "";
 		this.name = "";
+		this.address = "";
 		this.reference = "";
 		this.geometry = new MyGeometry();
 	}
@@ -90,9 +95,10 @@ public class Place implements Parcelable {
 	 * @param reference 
 	 * @param location
 	 */
-	public Place(String id, String name, String reference, Location location) {
+	public Place(String id, String name, String address, String reference, Location location) {
 		this.id = id;
 		this.name = name;
+		this.address = address;
 		this.reference = reference;
 		this.geometry = new MyGeometry();
 		this.geometry.location.latitude = location.getLatitude();
@@ -111,6 +117,13 @@ public class Place implements Parcelable {
 	 */
 	public String getName() {
 		return this.name;
+	}
+	
+	/**
+	 * @return the address of the place
+	 */
+	public String getAddress() {
+		return this.address;
 	}
 	
 	/**
@@ -147,6 +160,7 @@ public class Place implements Parcelable {
 	public void writeToParcel(Parcel out, int flags) {
         out.writeString(id);
         out.writeString(name);
+        out.writeString(address);
         out.writeString(reference);
         out.writeDouble(geometry.location.latitude);
         out.writeDouble(geometry.location.longitude);
@@ -172,6 +186,7 @@ public class Place implements Parcelable {
     private Place(Parcel in) {
         this.id = in.readString();
         this.name = in.readString();
+        this.address = in.readString();
         this.reference = in.readString();
         this.geometry.location.latitude = in.readDouble();
         this.geometry.location.longitude = in.readDouble();
