@@ -23,5 +23,5 @@ local.properties
 proguard/
 
 # Other
-.metadata/
+.metadata
 .DS_Store
