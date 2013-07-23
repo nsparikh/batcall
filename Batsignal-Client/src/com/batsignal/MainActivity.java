@@ -21,7 +21,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		// Start up RegisterActivity right away
-		Intent intent = new Intent(this, RegisterActivity.class);
+		Intent intent = new Intent(this, NearbyPlacesActivity.class);
 		startActivity(intent);
 		// Since this is just a wrapper to start the main activity,
 		// finish it after launching RegisterActivity
