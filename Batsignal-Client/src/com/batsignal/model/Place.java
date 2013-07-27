@@ -23,11 +23,14 @@ public class Place implements Parcelable {
 	
 	@Key("geometry")
 	private MyGeometry geometry;
+	
+	private int duration;
 
 	
 	/**
 	 * Helper class for JSON object parsing from Places API data
 	 * Represents the geometry (location) of a Place
+	 * 
 	 * @author neenaparikh
 	 *
 	 */
@@ -43,6 +46,7 @@ public class Place implements Parcelable {
 	/**
 	 * Helper class for JSON object parsing from Places API data
 	 * Represents the location (lat/lng) of a Place
+	 * 
 	 * @author neenaparikh
 	 *
 	 */
@@ -75,6 +79,7 @@ public class Place implements Parcelable {
 		this.geometry = new MyGeometry();
 		this.geometry.location.latitude = latitude;
 		this.geometry.location.longitude = longitude;
+		this.duration = 0;
 	}
 	
 	/**
@@ -86,6 +91,7 @@ public class Place implements Parcelable {
 		this.address = "";
 		this.reference = "";
 		this.geometry = new MyGeometry();
+		this.duration = 0;
 	}
 	
 	/**
@@ -103,7 +109,9 @@ public class Place implements Parcelable {
 		this.geometry = new MyGeometry();
 		this.geometry.location.latitude = location.getLatitude();
 		this.geometry.location.longitude = location.getLongitude();
+		this.duration = 0;
 	}
+	
 	
 	/**
 	 * @return the place ID
@@ -145,6 +153,21 @@ public class Place implements Parcelable {
 	 */
 	public double getLongitude() {
 		return this.geometry.location.longitude;
+	}
+	
+	/**
+	 * @return the duration of the user's stay at this Place
+	 */
+	public int getDuration() {
+		return this.duration;
+	}
+	
+	/**
+	 * Sets the duration (in minutes) of the user's stay at this Place.
+	 * @param duration
+	 */
+	public void setDuration(int duration) {
+		this.duration = duration;
 	}
 	
 	/**

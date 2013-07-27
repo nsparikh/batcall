@@ -1,5 +1,6 @@
 package com.batsignal;
 
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,9 +21,11 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		// Start up RegisterActivity right away
+		// TODO: Set up AppEngine / GCM registration - Start up RegisterActivity right away
+		// For now, just launch NearbyPlacesActivity
 		Intent intent = new Intent(this, NearbyPlacesActivity.class);
 		startActivity(intent);
+		
 		// Since this is just a wrapper to start the main activity,
 		// finish it after launching RegisterActivity
 		finish();
