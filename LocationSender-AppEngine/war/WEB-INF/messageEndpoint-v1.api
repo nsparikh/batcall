@@ -1,0 +1,71 @@
+{
+  "extends" : "thirdParty.api",
+  "abstract" : false,
+  "root" : "https://locationsender.appspot.com/_ah/api",
+  "name" : "messageEndpoint",
+  "version" : "v1",
+  "defaultVersion" : false,
+  "adapter" : {
+    "bns" : "https://locationsender.appspot.com/_ah/spi",
+    "deadline" : 10.0,
+    "type" : "lily"
+  },
+  "auth" : {
+    "allowCookieAuth" : false
+  },
+  "frontendLimits" : {
+    "unregisteredUserQps" : -1,
+    "unregisteredQps" : -1,
+    "unregisteredDaily" : -1,
+    "rules" : [ ]
+  },
+  "cacheControl" : {
+    "type" : "no-cache",
+    "maxAge" : 0
+  },
+  "ownerDomain" : "neenaparikh.com",
+  "ownerName" : "neenaparikh.com",
+  "packagePath" : "batsignal",
+  "methods" : {
+    "messageEndpoint.sendMessage" : {
+      "path" : "sendMessage/{name}/{latitude}/{longitude}/{duration}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ ],
+      "clientIds" : [ ],
+      "rosyMethod" : "com.neenaparikh.locationsender.MessageEndpoint.sendMessage",
+      "request" : {
+        "parameters" : {
+          "name" : {
+            "type" : "string",
+            "required" : true
+          },
+          "latitude" : {
+            "type" : "double",
+            "required" : true
+          },
+          "longitude" : {
+            "type" : "double",
+            "required" : true
+          },
+          "duration" : {
+            "type" : "int32",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "empty"
+      }
+    }
+  },
+  "descriptor" : {
+    "schemas" : {
+    },
+    "methods" : {
+      "com.neenaparikh.locationsender.MessageEndpoint.sendMessage" : {
+      }
+    }
+  }
+}
