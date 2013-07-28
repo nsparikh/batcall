@@ -5,7 +5,7 @@
   <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
   <init-param>
    <param-name>services</param-name>
-   <param-value>com.batsignal.DeviceInfoEndpoint,com.batsignal.MessageEndpoint</param-value>
+   <param-value>com.neenaparikh.batsignal.DeviceInfoEndpoint,com.neenaparikh.batsignal.MessageEndpoint</param-value>
   </init-param>
  </servlet>
  <servlet-mapping>

@@ -1,13 +1,14 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"s1omim4x8ymp9_6H8kBMkfEDqpo/pOA4qHXJMEW26WP9C6KFZGC7g6U\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/06Ls9YTsf692UFUHfTrqi4b-LIo\"",
  "discoveryVersion": "v1",
  "id": "deviceinfoendpoint:v1",
  "name": "deviceinfoendpoint",
  "version": "v1",
  "description": "This is an API",
- "ownerDomain": "batsignal.com",
- "ownerName": "batsignal.com",
+ "ownerDomain": "neenaparikh.com",
+ "ownerName": "neenaparikh.com",
+ "packagePath": "batsignal",
  "icons": {
   "x16": "http://www.google.com/images/icons/product/search-16.gif",
   "x32": "http://www.google.com/images/icons/product/search-32.gif"
@@ -159,10 +160,7 @@
    },
    "parameterOrder": [
     "id"
-   ],
-   "response": {
-    "$ref": "DeviceInfo"
-   }
+   ]
   },
   "updateDeviceInfo": {
    "id": "deviceinfoendpoint.updateDeviceInfo",

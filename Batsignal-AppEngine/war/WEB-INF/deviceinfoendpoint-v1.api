@@ -23,36 +23,17 @@
     "type" : "no-cache",
     "maxAge" : 0
   },
-  "ownerDomain" : "batsignal.com",
-  "ownerName" : "batsignal.com",
+  "ownerDomain" : "neenaparikh.com",
+  "ownerName" : "neenaparikh.com",
+  "packagePath" : "batsignal",
   "methods" : {
-    "deviceinfoendpoint.removeDeviceInfo" : {
-      "path" : "deviceinfo/{id}",
-      "httpMethod" : "DELETE",
-      "scopes" : [ ],
-      "audiences" : [ ],
-      "clientIds" : [ ],
-      "rosyMethod" : "com.batsignal.DeviceInfoEndpoint.removeDeviceInfo",
-      "request" : {
-        "parameters" : {
-          "id" : {
-            "type" : "string",
-            "required" : true
-          }
-        },
-        "body" : "empty"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
-    },
     "deviceinfoendpoint.updateDeviceInfo" : {
       "path" : "deviceinfo",
       "httpMethod" : "PUT",
       "scopes" : [ ],
       "audiences" : [ ],
       "clientIds" : [ ],
-      "rosyMethod" : "com.batsignal.DeviceInfoEndpoint.updateDeviceInfo",
+      "rosyMethod" : "com.neenaparikh.batsignal.DeviceInfoEndpoint.updateDeviceInfo",
       "request" : {
         "body" : "autoTemplate(backendRequest)",
         "bodyName" : "resource"
@@ -67,7 +48,7 @@
       "scopes" : [ ],
       "audiences" : [ ],
       "clientIds" : [ ],
-      "rosyMethod" : "com.batsignal.DeviceInfoEndpoint.listDeviceInfo",
+      "rosyMethod" : "com.neenaparikh.batsignal.DeviceInfoEndpoint.listDeviceInfo",
       "request" : {
         "parameters" : {
           "cursor" : {
@@ -91,7 +72,7 @@
       "scopes" : [ ],
       "audiences" : [ ],
       "clientIds" : [ ],
-      "rosyMethod" : "com.batsignal.DeviceInfoEndpoint.getDeviceInfo",
+      "rosyMethod" : "com.neenaparikh.batsignal.DeviceInfoEndpoint.getDeviceInfo",
       "request" : {
         "parameters" : {
           "id" : {
@@ -111,13 +92,33 @@
       "scopes" : [ ],
       "audiences" : [ ],
       "clientIds" : [ ],
-      "rosyMethod" : "com.batsignal.DeviceInfoEndpoint.insertDeviceInfo",
+      "rosyMethod" : "com.neenaparikh.batsignal.DeviceInfoEndpoint.insertDeviceInfo",
       "request" : {
         "body" : "autoTemplate(backendRequest)",
         "bodyName" : "resource"
       },
       "response" : {
         "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "deviceinfoendpoint.removeDeviceInfo" : {
+      "path" : "deviceinfo/{id}",
+      "httpMethod" : "DELETE",
+      "scopes" : [ ],
+      "audiences" : [ ],
+      "clientIds" : [ ],
+      "rosyMethod" : "com.neenaparikh.batsignal.DeviceInfoEndpoint.removeDeviceInfo",
+      "request" : {
+        "parameters" : {
+          "id" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "empty"
       }
     }
   },
@@ -156,12 +157,7 @@
       }
     },
     "methods" : {
-      "com.batsignal.DeviceInfoEndpoint.removeDeviceInfo" : {
-        "response" : {
-          "$ref" : "DeviceInfo"
-        }
-      },
-      "com.batsignal.DeviceInfoEndpoint.updateDeviceInfo" : {
+      "com.neenaparikh.batsignal.DeviceInfoEndpoint.updateDeviceInfo" : {
         "request" : {
           "$ref" : "DeviceInfo"
         },
@@ -169,23 +165,25 @@
           "$ref" : "DeviceInfo"
         }
       },
-      "com.batsignal.DeviceInfoEndpoint.listDeviceInfo" : {
+      "com.neenaparikh.batsignal.DeviceInfoEndpoint.listDeviceInfo" : {
         "response" : {
           "$ref" : "CollectionResponse_DeviceInfo"
         }
       },
-      "com.batsignal.DeviceInfoEndpoint.getDeviceInfo" : {
+      "com.neenaparikh.batsignal.DeviceInfoEndpoint.getDeviceInfo" : {
         "response" : {
           "$ref" : "DeviceInfo"
         }
       },
-      "com.batsignal.DeviceInfoEndpoint.insertDeviceInfo" : {
+      "com.neenaparikh.batsignal.DeviceInfoEndpoint.insertDeviceInfo" : {
         "request" : {
           "$ref" : "DeviceInfo"
         },
         "response" : {
           "$ref" : "DeviceInfo"
         }
+      },
+      "com.neenaparikh.batsignal.DeviceInfoEndpoint.removeDeviceInfo" : {
       }
     }
   }

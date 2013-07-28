@@ -1,13 +1,14 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"s1omim4x8ymp9_6H8kBMkfEDqpo/UY3HRR1cJwgDDD5kgAabeF8XPCY\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/ev3nABf2kXbwPPWa5zZ0x_8m2vA\"",
  "discoveryVersion": "v1",
  "id": "messageEndpoint:v1",
  "name": "messageEndpoint",
  "version": "v1",
  "description": "This is an API",
- "ownerDomain": "batsignal.com",
- "ownerName": "batsignal.com",
+ "ownerDomain": "neenaparikh.com",
+ "ownerName": "neenaparikh.com",
+ "packagePath": "batsignal",
  "icons": {
   "x16": "http://www.google.com/images/icons/product/search-16.gif",
   "x32": "http://www.google.com/images/icons/product/search-32.gif"

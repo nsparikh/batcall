@@ -23,16 +23,37 @@
     "type" : "no-cache",
     "maxAge" : 0
   },
-  "ownerDomain" : "batsignal.com",
-  "ownerName" : "batsignal.com",
+  "ownerDomain" : "neenaparikh.com",
+  "ownerName" : "neenaparikh.com",
+  "packagePath" : "batsignal",
   "methods" : {
+    "messageEndpoint.sendMessage" : {
+      "path" : "sendMessage/{message}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ ],
+      "clientIds" : [ ],
+      "rosyMethod" : "com.neenaparikh.batsignal.MessageEndpoint.sendMessage",
+      "request" : {
+        "parameters" : {
+          "message" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "empty"
+      }
+    },
     "messageEndpoint.listMessages" : {
       "path" : "messagedata",
       "httpMethod" : "GET",
       "scopes" : [ ],
       "audiences" : [ ],
       "clientIds" : [ ],
-      "rosyMethod" : "com.batsignal.MessageEndpoint.listMessages",
+      "rosyMethod" : "com.neenaparikh.batsignal.MessageEndpoint.listMessages",
       "request" : {
         "parameters" : {
           "cursor" : {
@@ -48,26 +69,6 @@
       },
       "response" : {
         "body" : "autoTemplate(backendResponse)"
-      }
-    },
-    "messageEndpoint.sendMessage" : {
-      "path" : "sendMessage/{message}",
-      "httpMethod" : "POST",
-      "scopes" : [ ],
-      "audiences" : [ ],
-      "clientIds" : [ ],
-      "rosyMethod" : "com.batsignal.MessageEndpoint.sendMessage",
-      "request" : {
-        "parameters" : {
-          "message" : {
-            "type" : "string",
-            "required" : true
-          }
-        },
-        "body" : "empty"
-      },
-      "response" : {
-        "body" : "empty"
       }
     }
   },
@@ -134,12 +135,12 @@
       }
     },
     "methods" : {
-      "com.batsignal.MessageEndpoint.listMessages" : {
+      "com.neenaparikh.batsignal.MessageEndpoint.sendMessage" : {
+      },
+      "com.neenaparikh.batsignal.MessageEndpoint.listMessages" : {
         "response" : {
           "$ref" : "CollectionResponse_MessageData"
         }
-      },
-      "com.batsignal.MessageEndpoint.sendMessage" : {
       }
     }
   }
