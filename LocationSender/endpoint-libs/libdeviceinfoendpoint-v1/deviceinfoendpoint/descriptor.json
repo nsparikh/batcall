@@ -1,16 +1,16 @@
 {
   "files": [
     {
-      "path": "locationsender-deviceinfoendpoint-v1-20130728230852-java-1.15.0-rc-sources.jar", 
+      "path": "myapp-deviceinfoendpoint-v1-20130728235948-java-1.15.0-rc-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "locationsender-deviceinfoendpoint-v1-20130728230852-java-1.15.0-rc.jar.properties", 
+      "path": "myapp-deviceinfoendpoint-v1-20130728235948-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
   "kind": "discovery#directoryItem", 
-  "moduleName": "com.neenaparikh.batsignal", 
+  "moduleName": "com.neenaparikh.locationsender", 
   "name": "deviceinfoendpoint", 
   "language": "java", 
   "proguard-config": "proguard-google-api-client.txt", 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130728230852, 
+  "revision": 20130728235948, 
   "id": "deviceinfoendpoint:v1", 
-  "modulePath": "com/neenaparikh/batsignal"
+  "modulePath": "com/neenaparikh/locationsender"
 }

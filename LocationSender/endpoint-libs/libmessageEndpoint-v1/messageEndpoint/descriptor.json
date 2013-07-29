@@ -1,11 +1,11 @@
 {
   "files": [
     {
-      "path": "locationsender-messageEndpoint-v1-20130728230857-java-1.15.0-rc-sources.jar", 
+      "path": "myapp-messageEndpoint-v1-20130728235952-java-1.15.0-rc-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "locationsender-messageEndpoint-v1-20130728230857-java-1.15.0-rc.jar.properties", 
+      "path": "myapp-messageEndpoint-v1-20130728235952-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130728230857, 
+  "revision": 20130728235952, 
   "id": "messageEndpoint:v1", 
   "modulePath": "com/neenaparikh/batsignal"
 }

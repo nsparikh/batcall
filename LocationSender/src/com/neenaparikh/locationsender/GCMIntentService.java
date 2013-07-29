@@ -17,9 +17,8 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.neenaparikh.batsignal.deviceinfoendpoint.Deviceinfoendpoint;
-import com.neenaparikh.batsignal.deviceinfoendpoint.model.DeviceInfo;
-import com.neenaparikh.locationsender.R;
+import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
+import com.neenaparikh.locationsender.deviceinfoendpoint.model.DeviceInfo;
 import com.neenaparikh.locationsender.model.Place;
 
 
@@ -34,7 +33,7 @@ import com.neenaparikh.locationsender.model.Place;
 public class GCMIntentService extends GCMBaseIntentService {
 	private final Deviceinfoendpoint endpoint;
 
-	public static final String PROJECT_NUMBER = "754255894724";
+	public static final String PROJECT_NUMBER = "655975699066";
 	
 
 	/**

@@ -8,7 +8,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.neenaparikh.locationsender.R;
 import com.neenaparikh.locationsender.comms.LoadPlacesTask;
 import com.neenaparikh.locationsender.util.Constants;
 

@@ -28,7 +28,7 @@ import com.google.api.server.spi.response.CollectionResponse;
 @Api(name = "messageEndpoint", namespace = @ApiNamespace(ownerDomain = "neenaparikh.com", ownerName = "neenaparikh.com", packagePath="batsignal"))
 // NO AUTHENTICATION; OPEN ENDPOINT!
 public class MessageEndpoint {
-	private static final String API_KEY = "AIzaSyALJ4OgVpPqljHSookKkO8hj3pUBZY9p9Q";
+	private static final String API_KEY = "AIzaSyA8YrzfpyrPzbfSY-pKLpulbWOPnQ-YAlU";
 
 	private static final DeviceInfoEndpoint endpoint = new DeviceInfoEndpoint();
 

@@ -4,7 +4,7 @@ package com.neenaparikh.locationsender.util;
 public class Constants {
 	
 	// API key for maps
-	public static final String API_KEY = "AIzaSyB84Arz4_WbBVKIdkYvF5rpzaynKip71UM";
+	public static final String API_KEY = "AIzaSyA8YrzfpyrPzbfSY-pKLpulbWOPnQ-YAlU";
 
 	// URL Sfor Places / Maps APIs
 	public static final String PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/search/json?";
