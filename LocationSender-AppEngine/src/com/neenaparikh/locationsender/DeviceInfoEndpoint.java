@@ -7,6 +7,7 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.users.User;
 import com.google.appengine.datanucleus.query.JPACursorHelper;
 
 import java.util.List;
@@ -18,7 +19,17 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-@Api(name = "deviceinfoendpoint", namespace = @ApiNamespace(ownerDomain = "neenaparikh.com", ownerName = "neenaparikh.com", packagePath = "locationsender"))
+@Api(
+		name = "deviceinfoendpoint", 
+		namespace = @ApiNamespace(
+				ownerDomain = "neenaparikh.com", 
+				ownerName = "neenaparikh.com", 
+				packagePath = "locationsender"
+		),
+		clientIds = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com",
+		 			 "655975699066.apps.googleusercontent.com"},
+		audiences = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com"}
+)
 public class DeviceInfoEndpoint {
 
 	/**
@@ -96,7 +107,13 @@ public class DeviceInfoEndpoint {
 	 * @return The inserted entity.
 	 */
 	@ApiMethod(name = "insertDeviceInfo")
-	public DeviceInfo insertDeviceInfo(DeviceInfo deviceinfo) {
+	public DeviceInfo insertDeviceInfo(DeviceInfo deviceinfo, User user) {
+		deviceinfo.setUserName(user.getNickname());
+		deviceinfo.setUserEmail(user.getEmail());
+		deviceinfo.setUserAuthDomain(user.getAuthDomain());
+		deviceinfo.setUserId(user.getUserId());
+		deviceinfo.setUserFederatedIdentity(user.getFederatedIdentity());
+		
 		EntityManager mgr = getEntityManager();
 		try {
 			if (containsDeviceInfo(deviceinfo)) {

@@ -2,16 +2,13 @@ package com.neenaparikh.locationsender.comms;
 
 import java.io.IOException;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.json.jackson.JacksonFactory;
 import com.neenaparikh.batsignal.messageEndpoint.MessageEndpoint;
-import com.neenaparikh.locationsender.CloudEndpointUtils;
 import com.neenaparikh.locationsender.model.Place;
+import com.neenaparikh.locationsender.util.HelperMethods;
 
 /**
  * An asynchronous task to send a message in a background thread.
@@ -24,23 +21,10 @@ public class SendMessageTask extends AsyncTask<Place, Void, Boolean> {
 
 	/**
 	 * Default constructor.
-	 * @param messageEndpoint The MessageEndpoint object used to send the message
-	 * 		to the AppEngine server
+	 * @param context The context
 	 */
-	public SendMessageTask(MessageEndpoint messageEndpoint) {
-		this.messageEndpoint = messageEndpoint;
-
-		// If no MessageEndpoint object is passed, create one of our own
-		if (messageEndpoint == null) {
-			MessageEndpoint.Builder endpointBuilder = new MessageEndpoint.Builder(
-					AndroidHttp.newCompatibleTransport(),
-					new JacksonFactory(),
-					new HttpRequestInitializer() {
-						public void initialize(HttpRequest httpRequest) { }
-					});
-
-			this.messageEndpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
-		}
+	public SendMessageTask(Context context) {
+		this.messageEndpoint = HelperMethods.getMessageEndpoint(context);
 	}
 
 	/**
@@ -49,7 +33,6 @@ public class SendMessageTask extends AsyncTask<Place, Void, Boolean> {
 	@Override
 	protected Boolean doInBackground(Place... params) {
 		Place place = params[0];
-		
 		try {
 			messageEndpoint.sendMessage(place.getName(), place.getLatitude(), 
 					place.getLongitude(), place.getDuration()).execute();

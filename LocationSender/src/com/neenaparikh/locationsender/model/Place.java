@@ -236,6 +236,19 @@ public class Place implements Parcelable {
 	}
 	
 	/**
+	 * @return a detailed string representation of the place
+	 */
+	public String toStringVerbose() {
+		return "ID: " + this.id + 
+				"\nName: " + this.name + 
+				"\nAddress: " + this.address +
+				"\nReference: " + this.reference + 
+				"\nLatitude: " + this.geometry.location.latitude + 
+				"\nLongitude: " + this.geometry.location.longitude + 
+				"\nDuration: " + this.duration;
+	}
+	
+	/**
 	 * @return a Uri object that will launch this place's location in a map
 	 */
 	public Uri getUri() {

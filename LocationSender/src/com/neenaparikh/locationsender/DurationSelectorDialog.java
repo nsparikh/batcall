@@ -68,7 +68,7 @@ public class DurationSelectorDialog extends DialogFragment {
 
 				// TODO: launch new activity to display contacts, pass place object with duration
 				// TODO: delete this
-				new SendMessageTask(null).execute(selectedPlace);
+				new SendMessageTask(getActivity()).execute(selectedPlace);
 			}
 		});
 		builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

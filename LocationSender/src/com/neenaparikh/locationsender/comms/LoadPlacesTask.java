@@ -62,7 +62,7 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 		super.onPreExecute();
 
 		pDialog = new ProgressDialog(mActivity);
-		pDialog.setMessage("Retrieving location...");
+		pDialog.setMessage("Updating location...");
 		pDialog.setCancelable(false);
 		pDialog.show();
 	}

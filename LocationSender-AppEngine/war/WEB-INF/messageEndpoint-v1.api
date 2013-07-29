@@ -1,12 +1,12 @@
 {
   "extends" : "thirdParty.api",
   "abstract" : false,
-  "root" : "https://myapp.appspot.com/_ah/api",
+  "root" : "https://locationsender.appspot.com/_ah/api",
   "name" : "messageEndpoint",
   "version" : "v1",
   "defaultVersion" : false,
   "adapter" : {
-    "bns" : "https://myapp.appspot.com/_ah/spi",
+    "bns" : "https://locationsender.appspot.com/_ah/spi",
     "deadline" : 10.0,
     "type" : "lily"
   },
@@ -31,8 +31,8 @@
       "path" : "sendMessage/{name}/{latitude}/{longitude}/{duration}",
       "httpMethod" : "POST",
       "scopes" : [ ],
-      "audiences" : [ ],
-      "clientIds" : [ ],
+      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
+      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
       "rosyMethod" : "com.neenaparikh.locationsender.MessageEndpoint.sendMessage",
       "request" : {
         "parameters" : {

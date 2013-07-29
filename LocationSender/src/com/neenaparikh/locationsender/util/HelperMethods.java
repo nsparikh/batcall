@@ -1,5 +1,14 @@
 package com.neenaparikh.locationsender.util;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.json.jackson.JacksonFactory;
+import com.neenaparikh.batsignal.messageEndpoint.MessageEndpoint;
+import com.neenaparikh.locationsender.CloudEndpointUtils;
+
 public class HelperMethods {
 
 	/**
@@ -58,5 +67,25 @@ public class HelperMethods {
 
 			return hourString + ", " + minuteString;
 		}
+	}
+
+	/**
+	 * Retrieves an authenticated MessageEndpoint object.
+	 * Should only be called after the user has been authenticated.
+	 */
+	public static MessageEndpoint getMessageEndpoint(Context context) {
+		// Get saved account name
+		SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
+		String accountName = sharedPrefs.getString(Constants.SHARED_PREFERENCES_ACCOUNT_NAME_KEY, null);
+		
+		// Retrieve credentials
+		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context, Constants.CREDENTIAL_AUDIENCE);
+		credential.setSelectedAccountName(accountName);
+		
+		// Create the message endpoint object with credentials
+		MessageEndpoint.Builder endpointBuilder = new MessageEndpoint.Builder(
+				AndroidHttp.newCompatibleTransport(), new JacksonFactory(), credential);
+		MessageEndpoint messageEndpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+		return messageEndpoint;
 	}
 }

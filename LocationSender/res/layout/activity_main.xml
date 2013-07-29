@@ -2,6 +2,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity" >
-
+    android:padding="8dp" >
+    
+    <Button android:id="@+id/main_activity_retry_button"
+        android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_centerVertical="true"
+		android:onClick="onClickRetry"
+		android:textSize="18sp"
+		android:text="@string/retry_button_text" />
+		
 </RelativeLayout>

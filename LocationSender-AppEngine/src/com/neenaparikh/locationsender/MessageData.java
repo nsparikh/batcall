@@ -35,13 +35,19 @@ public class MessageData {
 	// Place coordinates
 	private double latitude;
 	private double longitude;
+
+	// Timestamp of when the message was sent
+	private long timestamp;
 	
 	// Duration of the message (in minutes)
 	private int duration;
 
-	// Timestamp of when the message was sent
-	private long timestamp;
-
+	// Details of the sender (fields in the com.google.appengine.api.users.User class)
+	private String senderName;
+	private String senderEmail;
+	private String senderAuthDomain;
+	private String senderId;
+	private String senderFederatedIdentity;
 
 
 	public Key getKey() {
@@ -86,5 +92,50 @@ public class MessageData {
 
 	public void setDuration(int duration) {
 		this.duration = duration;
+	}
+
+	public String getSenderName() {
+		return senderName;
+	}
+
+	public void setSenderName(String senderName) {
+		this.senderName = senderName;
+		if (senderName == null) this.senderName = "";
+	}
+
+	public String getSenderEmail() {
+		return senderEmail;
+	}
+
+	public void setSenderEmail(String senderEmail) {
+		this.senderEmail = senderEmail;
+		if (senderEmail == null) this.senderEmail = "";
+	}
+
+	public String getSenderAuthDomain() {
+		return senderAuthDomain;
+	}
+
+	public void setSenderAuthDomain(String senderAuthDomain) {
+		this.senderAuthDomain = senderAuthDomain;
+		if (senderAuthDomain == null) this.senderAuthDomain = "";
+	}
+
+	public String getSenderId() {
+		return senderId;
+	}
+
+	public void setSenderId(String senderId) {
+		this.senderId = senderId;
+		if (senderId == null) this.senderId = "";
+	}
+
+	public String getSenderFederatedIdentity() {
+		return senderFederatedIdentity;
+	}
+
+	public void setSenderFederatedIdentity(String senderFederatedIdentity) {
+		this.senderFederatedIdentity = senderFederatedIdentity;
+		if (senderFederatedIdentity == null) this.senderFederatedIdentity = "";
 	}
 }

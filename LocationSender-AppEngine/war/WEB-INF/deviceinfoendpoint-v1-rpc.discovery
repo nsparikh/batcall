@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/X-mzhKPVlQawJF9OBviz3J6zeR0\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/jIVg7t3wMAyAUax21CAS1zWsorY\"",
  "discoveryVersion": "v1",
  "id": "deviceinfoendpoint:v1",
  "name": "deviceinfoendpoint",
@@ -14,8 +14,8 @@
   "x32": "http://www.google.com/images/icons/product/search-32.gif"
  },
  "protocol": "rpc",
- "rootUrl": "https://myapp.appspot.com/_ah/api/",
- "rpcUrl": "https://myapp.appspot.com/_ah/api/rpc",
+ "rootUrl": "https://locationsender.appspot.com/_ah/api/",
+ "rpcUrl": "https://locationsender.appspot.com/_ah/api/rpc",
  "rpcPath": "/_ah/api/rpc",
  "parameters": {
   "alt": {
@@ -91,6 +91,21 @@
     "timestamp": {
      "type": "string",
      "format": "int64"
+    },
+    "userAuthDomain": {
+     "type": "string"
+    },
+    "userEmail": {
+     "type": "string"
+    },
+    "userFederatedIdentity": {
+     "type": "string"
+    },
+    "userId": {
+     "type": "string"
+    },
+    "userName": {
+     "type": "string"
     }
    }
   }

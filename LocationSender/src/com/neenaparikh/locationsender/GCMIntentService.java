@@ -20,6 +20,7 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
 import com.neenaparikh.locationsender.deviceinfoendpoint.model.DeviceInfo;
 import com.neenaparikh.locationsender.model.Place;
+import com.neenaparikh.locationsender.util.Constants;
 
 
 /**
@@ -32,15 +33,13 @@ import com.neenaparikh.locationsender.model.Place;
  */
 public class GCMIntentService extends GCMBaseIntentService {
 	private final Deviceinfoendpoint endpoint;
-
-	public static final String PROJECT_NUMBER = "655975699066";
 	
 
 	/**
 	 * Default constructor
 	 */
 	public GCMIntentService() {
-		super(PROJECT_NUMBER);
+		super(Constants.PROJECT_NUMBER);
 		Deviceinfoendpoint.Builder endpointBuilder = new Deviceinfoendpoint.Builder(
 				AndroidHttp.newCompatibleTransport(), new JacksonFactory(),
 				new HttpRequestInitializer() {
@@ -56,7 +55,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	public static void register(Context mContext) {
 		GCMRegistrar.checkDevice(mContext);
 		GCMRegistrar.checkManifest(mContext);
-		GCMRegistrar.register(mContext, PROJECT_NUMBER);
+		GCMRegistrar.register(mContext, Constants.PROJECT_NUMBER);
 	}
 
 	/**
@@ -75,6 +74,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	@Override
 	public void onError(Context context, String errorId) {
 		Log.e(GCMIntentService.class.getName(), "GCM registration failed. Check project number?");
+		sendRegisterIntent(context, false);
 	}
 
 	/**
@@ -109,25 +109,21 @@ public class GCMIntentService extends GCMBaseIntentService {
 				 * registered.
 				 */
 				DeviceInfo deviceInfo = new DeviceInfo();
-				endpoint.insertDeviceInfo(
-						deviceInfo
-						.setDeviceRegistrationID(registration)
+				endpoint.insertDeviceInfo(deviceInfo.setDeviceRegistrationID(registration)
 						.setTimestamp(System.currentTimeMillis())
-						.setDeviceInformation(
-								URLEncoder
-								.encode(android.os.Build.MANUFACTURER
-										+ " "
-										+ android.os.Build.PRODUCT,
-										"UTF-8"))).execute();
+						.setDeviceInformation(URLEncoder
+								.encode(android.os.Build.MANUFACTURER + " " + android.os.Build.PRODUCT, "UTF-8")))
+								.execute();
 			}
 		} catch (IOException e) {
 			Log.e(GCMIntentService.class.getName(),
 					"Exception received when attempting to register with server at "
 							+ endpoint.getRootUrl(), e);
-
+			sendRegisterIntent(context, false);
 			return;
 		}
 		Log.i(GCMIntentService.class.getName(), "Registration success!");
+		sendRegisterIntent(context, true);
 	}
 
 	/**
@@ -172,7 +168,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 		testPlace.setDuration(Integer.parseInt(intent.getStringExtra("duration")));
 		
 		// TODO: get sender info?
-		showNotification(testPlace, "neena", Long.parseLong(intent.getStringExtra("timestamp")));
+		showNotification(testPlace, intent.getStringExtra("senderName"), 
+				Long.parseLong(intent.getStringExtra("timestamp")));
 	}
 	
 	/**
@@ -199,4 +196,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotificationManager.notify(0, notification);
 	}
+	
+	/**
+	 * Sends an intent back to the activity from which this was launched.
+	 * This is how we get information from this service back to the activity.
+	 */
+	private void sendRegisterIntent(Context context, boolean isSuccessful) {
+		Intent intent = new Intent(context, MainActivity.class);
+		intent.putExtra(Constants.GCM_INTENT_SERVICE_KEY, true);
+		intent.putExtra(Constants.REGISTER_INTENT_SUCCESS_KEY, isSuccessful);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(intent);
+	}
+	
+
 }

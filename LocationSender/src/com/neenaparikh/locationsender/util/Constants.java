@@ -3,8 +3,20 @@ package com.neenaparikh.locationsender.util;
 
 public class Constants {
 	
-	// API key for maps
+	// API key and Project Number for AppEngine project
 	public static final String API_KEY = "AIzaSyA8YrzfpyrPzbfSY-pKLpulbWOPnQ-YAlU";
+	public static final String PROJECT_NUMBER = "655975699066";
+	
+	// Keys for SharedPreferences and Credentials
+	public static final String SHARED_PREFERENCES_NAME = "LocationSender_SharedPreferences";
+	public static final String SHARED_PREFERENCES_ACCOUNT_NAME_KEY = "saved_account_name";
+	public static final int REQUEST_ACCOUNT_PICKER = 2;
+	public static final String CREDENTIAL_AUDIENCE = "server:client_id:655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com";
+	
+	
+	// Key for passing registration messages from GCMIntentService to Activities
+	public static final String GCM_INTENT_SERVICE_KEY = "GCM_intent_service";
+	public static final String REGISTER_INTENT_SUCCESS_KEY = "is_successful";
 
 	// URL Sfor Places / Maps APIs
 	public static final String PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/search/json?";

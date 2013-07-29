@@ -1,11 +1,11 @@
 {
   "files": [
     {
-      "path": "myapp-deviceinfoendpoint-v1-20130728235948-java-1.15.0-rc-sources.jar", 
+      "path": "locationsender-deviceinfoendpoint-v1-20130729043704-java-1.15.0-rc-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "myapp-deviceinfoendpoint-v1-20130728235948-java-1.15.0-rc.jar.properties", 
+      "path": "locationsender-deviceinfoendpoint-v1-20130729043704-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130728235948, 
+  "revision": 20130729043704, 
   "id": "deviceinfoendpoint:v1", 
   "modulePath": "com/neenaparikh/locationsender"
 }
