@@ -30,7 +30,7 @@ public class MessageData {
 	private Key key;
 
 	// Place name
-	private String name;
+	private String placeName;
 
 	// Place coordinates
 	private double latitude;
@@ -54,12 +54,12 @@ public class MessageData {
 		return key;
 	}
 
-	public String getName() {
-		return name;
+	public String getPlaceName() {
+		return placeName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setPlaceName(String placeName) {
+		this.placeName = placeName;
 	}
 
 	public double getLatitude() {

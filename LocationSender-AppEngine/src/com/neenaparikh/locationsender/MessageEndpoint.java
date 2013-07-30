@@ -1,7 +1,7 @@
 package com.neenaparikh.locationsender;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.sql.SQLException;
 
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -13,7 +13,6 @@ import com.google.android.gcm.server.Sender;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
-import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
 
@@ -28,7 +27,7 @@ import com.google.appengine.api.users.User;
 		namespace = @ApiNamespace(
 				ownerDomain = "neenaparikh.com", 
 				ownerName = "neenaparikh.com", 
-				packagePath="batsignal"
+				packagePath="locationsender"
 		),
 		clientIds = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com",
 					 "655975699066.apps.googleusercontent.com"},
@@ -44,54 +43,72 @@ public class MessageEndpoint {
 	 * will also broadcast the message to the appropriate devices
 	 * via Google Cloud Messaging
 	 *  
-	 * @param message The entity to be inserted.
-	 * @param recipients The recipients of the message
+	 * @param placeName The place name
+	 * @param latitude The latitude coordinate of the place
+	 * @param longitude The longitude coordinate of the place
+	 * @param duration The duration of the message
+	 * @param recipientEmail The recipient's email address, if any
+	 * @param recipientPhone The recipient's phone number, if any
+	 * @param user The authenticated user who is sending the message
 	 * @return 
 	 * @throws IOException
+	 * @throws SQLException 
+	 * @throws OAuthRequestException 
 	 */
-	// TODO: add recipients!
 	@ApiMethod(name = "sendMessage")
-	public void sendMessage(@Named("name") String name, @Named("latitude") double latitude, 
-			@Named("longitude") double longitude, @Named("duration") int duration, User user) 
-					throws OAuthRequestException, IOException {
+	public BooleanResult sendMessage(@Named("name") String placeName, 
+			@Named("latitude") double latitude, 
+			@Named("longitude") double longitude, 
+			@Named("duration") int duration, 
+			@Named("recipientEmail") String recipientEmail, 
+			@Named("recipientPhone") String recipientPhone,
+			User user) throws OAuthRequestException {
 
 		if (user == null) {
 			// This means we're not authenticated
 			throw new OAuthRequestException("User is not authorized");
-		} else {
-			Sender sender = new Sender(API_KEY);
-
-			// Create a MessageData entity and persist it
-			MessageData messageObj = new MessageData();
-			messageObj.setName(name);
-			messageObj.setLatitude(latitude);
-			messageObj.setLongitude(longitude);
-			messageObj.setDuration(duration);
-			messageObj.setTimestamp(System.currentTimeMillis());
-			
-			// Add details of the User who is sending the message
-			messageObj.setSenderName(user.getNickname());
-			messageObj.setSenderEmail(user.getEmail());
-			messageObj.setSenderAuthDomain(user.getAuthDomain());
-			messageObj.setSenderId(user.getUserId());
-			messageObj.setSenderFederatedIdentity(user.getFederatedIdentity());
-
-			EntityManager mgr = getEntityManager();
-			try {
-				mgr.persist(messageObj);
-			} finally {
-				mgr.close();
-			}
-			
-			// TODO: specify recipient?
-			// ping a max of 10 registered devices
-			CollectionResponse<DeviceInfo> response = endpoint.listDeviceInfo(null, 10);
-			for (DeviceInfo deviceInfo : response.getItems()) {
-				Logger.getLogger(MessageEndpoint.class.getName()).info("SENDING MESSAGE TO " + deviceInfo.getDeviceRegistrationID());
-				doSendViaGcm(messageObj, sender, deviceInfo, user);
-			}
 		}
 
+		// Try to find user by email or phone. If not found, throw exception.
+		DeviceInfo matchedDevice = null;
+		if (recipientEmail != null) 
+			matchedDevice = endpoint.findDeviceByEmail(recipientEmail);
+		if (matchedDevice == null && recipientPhone != null) 
+			matchedDevice = endpoint.findDeviceByPhone(recipientPhone);
+		if (matchedDevice == null) return new BooleanResult(false); 
+
+		// Now we have the recipient device - create the message and persist it
+
+		// Create a MessageData entity and persist it
+		MessageData messageObj = new MessageData();
+		messageObj.setPlaceName(placeName);
+		messageObj.setLatitude(latitude);
+		messageObj.setLongitude(longitude);
+		messageObj.setDuration(duration);
+		messageObj.setTimestamp(System.currentTimeMillis());
+
+		// Add details of the User who is sending the message
+		messageObj.setSenderName(user.getNickname());
+		messageObj.setSenderEmail(user.getEmail());
+		messageObj.setSenderAuthDomain(user.getAuthDomain());
+		messageObj.setSenderId(user.getUserId());
+		messageObj.setSenderFederatedIdentity(user.getFederatedIdentity());
+
+		EntityManager mgr = getEntityManager();
+		try {
+			mgr.persist(messageObj);
+		} finally {
+			mgr.close();
+		}
+
+		// Send message to recipient
+		Sender sender = new Sender(API_KEY);
+		try {
+			doSendViaGcm(messageObj, sender, matchedDevice, user);
+			return new BooleanResult(true);
+		} catch (IOException e) {
+			return new BooleanResult(false);
+		}
 
 	}
 
@@ -102,13 +119,14 @@ public class MessageEndpoint {
 	 * @param sender The Sender object to be used for ping,
 	 * @param deviceInfo The registration id of the device.
 	 * @return Result the result of the ping.
+	 * @throws OAuthRequestException 
 	 */
 	private static Result doSendViaGcm(MessageData message, Sender sender,
-			DeviceInfo deviceInfo, User user) throws IOException {
+			DeviceInfo deviceInfo, User user) throws IOException, OAuthRequestException {
 
 		// This message object is a Google Cloud Messaging object, it is NOT 
 		// related to the MessageData class
-		Message msg = new Message.Builder().addData("name", message.getName())
+		Message msg = new Message.Builder().addData("placeName", message.getPlaceName())
 				.addData("latitude", String.valueOf(message.getLatitude()))
 				.addData("longitude", String.valueOf(message.getLongitude()))
 				.addData("duration", String.valueOf(message.getDuration()))
@@ -141,5 +159,21 @@ public class MessageEndpoint {
 
 	private static EntityManager getEntityManager() {
 		return EMF.get().createEntityManager();
+	}
+	
+	/**
+	 * Custom boolean result class
+	 */
+	public class BooleanResult {
+		private boolean result;
+		private BooleanResult(boolean result) {
+			this.result = result;
+		}
+		public boolean getResult() {
+			return result;
+		}
+		public void setResult(boolean result) {
+			this.result = result;
+		}
 	}
 }

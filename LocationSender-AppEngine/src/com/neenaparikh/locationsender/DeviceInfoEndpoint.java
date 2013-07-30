@@ -1,23 +1,23 @@
 package com.neenaparikh.locationsender;
 
-import com.neenaparikh.locationsender.EMF;
-
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.ApiNamespace;
-import com.google.api.server.spi.response.CollectionResponse;
-import com.google.appengine.api.datastore.Cursor;
-import com.google.appengine.api.users.User;
-import com.google.appengine.datanucleus.query.JPACursorHelper;
-
 import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.persistence.EntityExistsException;
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.Query;
+
+import com.google.api.server.spi.config.Api;
+import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.ApiMethod.HttpMethod;
+import com.google.api.server.spi.config.ApiNamespace;
+import com.google.api.server.spi.response.CollectionResponse;
+import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.oauth.OAuthRequestException;
+import com.google.appengine.api.users.User;
+import com.google.appengine.datanucleus.query.JPACursorHelper;
 
 @Api(
 		name = "deviceinfoendpoint", 
@@ -97,6 +97,78 @@ public class DeviceInfoEndpoint {
 		}
 		return deviceinfo;
 	}
+	
+	/**
+	 * This method gets the entity having the given email. It uses HTTP GET method.
+	 *
+	 * @param email the email address
+	 * @return The entity with the given email, or null if there are none.
+	 */
+	@SuppressWarnings({ "unchecked", "unused" })
+	@ApiMethod(
+		name = "findDeviceByEmail",
+		httpMethod = HttpMethod.GET
+	)
+	public DeviceInfo findDeviceByEmail(@Named("email") String email) {
+		EntityManager mgr = null;
+		List<DeviceInfo> execute = null;
+		DeviceInfo matchedDevice = null;
+
+		try {
+			mgr = getEntityManager();
+			Query query = mgr.createQuery(
+					"select from DeviceInfo as DeviceInfo where userEmail = '" + email + "'");
+
+			execute = (List<DeviceInfo>) query.getResultList();
+
+			// Tight loop for fetching all entities from datastore and accomodate
+			// for lazy fetch.
+			for (DeviceInfo obj : execute)
+				;
+			
+			if (execute.size() > 0) matchedDevice = execute.get(0);
+		} finally {
+			mgr.close();
+		}
+
+		return matchedDevice;
+	}
+	
+	/**
+	 * This method gets the entity having the given phone number. It uses HTTP GET method.
+	 *
+	 * @param phone The phone number
+	 * @return The entity with the given phone number, or null if there are none.
+	 */
+	@SuppressWarnings({ "unchecked", "unused" })
+	@ApiMethod(
+		name = "findDeviceByPhone",
+		httpMethod = HttpMethod.GET
+	)
+	public DeviceInfo findDeviceByPhone(@Named("phone") String phone) {
+		EntityManager mgr = null;
+		List<DeviceInfo> execute = null;
+		DeviceInfo matchedDevice = null;
+
+		try {
+			mgr = getEntityManager();
+			Query query = mgr.createQuery(
+					"select from DeviceInfo as DeviceInfo where phoneNumber = '" + phone + "'");
+
+			execute = (List<DeviceInfo>) query.getResultList();
+
+			// Tight loop for fetching all entities from datastore and accomodate
+			// for lazy fetch.
+			for (DeviceInfo obj : execute)
+				;
+			
+			if (execute.size() > 0) matchedDevice = execute.get(0);
+		} finally {
+			mgr.close();
+		}
+
+		return matchedDevice;
+	}
 
 	/**
 	 * This inserts a new entity into App Engine datastore. If the entity already
@@ -105,20 +177,27 @@ public class DeviceInfoEndpoint {
 	 *
 	 * @param deviceinfo the entity to be inserted.
 	 * @return The inserted entity.
+	 * @throws OAuthRequestException 
 	 */
 	@ApiMethod(name = "insertDeviceInfo")
-	public DeviceInfo insertDeviceInfo(DeviceInfo deviceinfo, User user) {
-		deviceinfo.setUserName(user.getNickname());
-		deviceinfo.setUserEmail(user.getEmail());
-		deviceinfo.setUserAuthDomain(user.getAuthDomain());
-		deviceinfo.setUserId(user.getUserId());
-		deviceinfo.setUserFederatedIdentity(user.getFederatedIdentity());
-		
+	public DeviceInfo insertDeviceInfo(DeviceInfo deviceinfo, User user) throws OAuthRequestException {
 		EntityManager mgr = getEntityManager();
 		try {
 			if (containsDeviceInfo(deviceinfo)) {
 				throw new EntityExistsException("Object already exists");
 			}
+			
+			if (user == null) {
+				// This means we're not authenticated
+				throw new OAuthRequestException("User is not authorized");
+			} 
+			
+			deviceinfo.setUserName(user.getNickname());
+			deviceinfo.setUserEmail(user.getEmail());
+			deviceinfo.setUserAuthDomain(user.getAuthDomain());
+			deviceinfo.setUserId(user.getUserId());
+			deviceinfo.setUserFederatedIdentity(user.getFederatedIdentity());
+			
 			mgr.persist(deviceinfo);
 		} finally {
 			mgr.close();
@@ -169,9 +248,12 @@ public class DeviceInfoEndpoint {
 		EntityManager mgr = getEntityManager();
 		boolean contains = true;
 		try {
-			DeviceInfo item = mgr.find(DeviceInfo.class,
-					deviceinfo.getDeviceRegistrationID());
-			if (item == null) {
+			// Check against registration ID, email, and phone number
+			DeviceInfo matchIdItem = mgr.find(DeviceInfo.class, deviceinfo.getDeviceRegistrationID());
+			DeviceInfo matchEmailItem = findDeviceByEmail(deviceinfo.getUserEmail());
+			DeviceInfo matchPhoneNumber = findDeviceByPhone(deviceinfo.getPhoneNumber());
+			
+			if (matchIdItem == null && matchEmailItem == null && matchPhoneNumber == null) {
 				contains = false;
 			}
 		} finally {

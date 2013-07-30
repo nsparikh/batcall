@@ -2,12 +2,14 @@ package com.neenaparikh.locationsender.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.telephony.PhoneNumberUtils;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.neenaparikh.batsignal.messageEndpoint.MessageEndpoint;
 import com.neenaparikh.locationsender.CloudEndpointUtils;
+import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
+import com.neenaparikh.locationsender.messageEndpoint.MessageEndpoint;
 
 public class HelperMethods {
 
@@ -68,10 +70,21 @@ public class HelperMethods {
 			return hourString + ", " + minuteString;
 		}
 	}
+	
+	/**
+	 * "Flattens" a phone number into a standard format by eliminating all symbols, etc.
+	 */
+	public static String flattenPhone(String formattedPhone) {
+		String flattened = PhoneNumberUtils.stripSeparators(formattedPhone);
+		flattened = flattened.replaceAll("\\+", "");
+		if (flattened.charAt(0) == '1') flattened = flattened.replaceFirst("1", "");
+		return flattened;
+	}
 
 	/**
 	 * Retrieves an authenticated MessageEndpoint object.
 	 * Should only be called after the user has been authenticated.
+	 * TODO: move this to a more appropriate location
 	 */
 	public static MessageEndpoint getMessageEndpoint(Context context) {
 		// Get saved account name
@@ -87,5 +100,27 @@ public class HelperMethods {
 				AndroidHttp.newCompatibleTransport(), new JacksonFactory(), credential);
 		MessageEndpoint messageEndpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 		return messageEndpoint;
+	}
+	
+
+	/**
+	 * Retrieves an authenticated DeviceInfoEndpoint object.
+	 * Should only be called after the user has been authenticated.
+	 * TODO: move this to a more appropriate location
+	 */
+	public static Deviceinfoendpoint getDeviceInfoEndpoint(Context context) {
+		// Get saved account name
+		SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
+		String accountName = sharedPrefs.getString(Constants.SHARED_PREFERENCES_ACCOUNT_NAME_KEY, null);
+		
+		// Retrieve credentials
+		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context, Constants.CREDENTIAL_AUDIENCE);
+		credential.setSelectedAccountName(accountName);
+		
+		// Create the message endpoint object with credentials
+		Deviceinfoendpoint.Builder endpointBuilder = new Deviceinfoendpoint.Builder(
+				AndroidHttp.newCompatibleTransport(), new JacksonFactory(), credential);
+		Deviceinfoendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+		return endpoint;
 	}
 }

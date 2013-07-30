@@ -4,13 +4,12 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
 
-import com.neenaparikh.locationsender.R;
-import com.neenaparikh.locationsender.comms.SendMessageTask;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.Constants;
 
@@ -38,7 +37,7 @@ public class DurationSelectorDialog extends DialogFragment {
 
 		// Retrieve the selected place from the arguments
 		final Place selectedPlace = getArguments().getParcelable(Constants.SELECTED_PLACE_KEY);
-
+		
 		// Use the Builder class for convenient dialog construction
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(selectedPlace.getName());
@@ -66,9 +65,10 @@ public class DurationSelectorDialog extends DialogFragment {
 				int minutes = minutePicker.getValue();
 				selectedPlace.setDuration(minutes + 60*hours);
 
-				// TODO: launch new activity to display contacts, pass place object with duration
-				// TODO: delete this
-				new SendMessageTask(getActivity()).execute(selectedPlace);
+				// Launch new activity to display contacts, pass place object
+				Intent contactsIntent = new Intent(getActivity(), ContactsActivity.class);
+				contactsIntent.putExtra(Constants.SELECTED_PLACE_KEY, selectedPlace);
+				startActivity(contactsIntent);
 			}
 		});
 		builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

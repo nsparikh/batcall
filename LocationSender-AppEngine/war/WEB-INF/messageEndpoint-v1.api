@@ -25,10 +25,10 @@
   },
   "ownerDomain" : "neenaparikh.com",
   "ownerName" : "neenaparikh.com",
-  "packagePath" : "batsignal",
+  "packagePath" : "locationsender",
   "methods" : {
     "messageEndpoint.sendMessage" : {
-      "path" : "sendMessage/{name}/{latitude}/{longitude}/{duration}",
+      "path" : "sendMessage/{name}/{latitude}/{longitude}/{duration}/{recipientEmail}/{recipientPhone}",
       "httpMethod" : "POST",
       "scopes" : [ ],
       "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
@@ -51,20 +51,40 @@
           "duration" : {
             "type" : "int32",
             "required" : true
+          },
+          "recipientEmail" : {
+            "type" : "string",
+            "required" : true
+          },
+          "recipientPhone" : {
+            "type" : "string",
+            "required" : true
           }
         },
         "body" : "empty"
       },
       "response" : {
-        "body" : "empty"
+        "body" : "autoTemplate(backendResponse)"
       }
     }
   },
   "descriptor" : {
     "schemas" : {
+      "BooleanResult" : {
+        "id" : "BooleanResult",
+        "type" : "object",
+        "properties" : {
+          "result" : {
+            "type" : "boolean"
+          }
+        }
+      }
     },
     "methods" : {
       "com.neenaparikh.locationsender.MessageEndpoint.sendMessage" : {
+        "response" : {
+          "$ref" : "BooleanResult"
+        }
       }
     }
   }

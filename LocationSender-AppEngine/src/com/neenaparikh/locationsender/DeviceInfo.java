@@ -44,6 +44,9 @@ public class DeviceInfo {
 	private String userId;
 	private String userFederatedIdentity;
 	
+	// Device phone number
+	private String phoneNumber;
+	
 
 	public String getDeviceRegistrationID() {
 		return deviceRegistrationID;
@@ -112,5 +115,14 @@ public class DeviceInfo {
 	public void setUserFederatedIdentity(String userFederatedIdentity) {
 		this.userFederatedIdentity = userFederatedIdentity;
 		if (userFederatedIdentity == null) this.userFederatedIdentity = "";
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+		if (phoneNumber == null) this.phoneNumber = "";
 	}
 }

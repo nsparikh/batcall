@@ -17,8 +17,20 @@ public class Constants {
 	// Key for passing registration messages from GCMIntentService to Activities
 	public static final String GCM_INTENT_SERVICE_KEY = "GCM_intent_service";
 	public static final String REGISTER_INTENT_SUCCESS_KEY = "is_successful";
+	
+	// Keys for accessing message object info
+	public static final String MESSAGE_PLACE_NAME_KEY = "placeName";
+	public static final String MESSAGE_PLACE_LATITUDE_KEY = "latitude";
+	public static final String MESSAGE_PLACE_LONGITUDE_KEY = "longitude";
+	public static final String MESSAGE_DURATION_KEY = "duration";
+	public static final String MESSAGE_TIMESTAMP_KEY = "timestamp";
+	public static final String MESSAGE_SENDER_NAME_KEY = "senderName";
+	public static final String MESSAGE_SENDER_EMAIL_KEY = "senderEmail";
+	public static final String MESSAGE_SENDER_AUTH_DOMAIN_KEY = "senderAuthDomain";
+	public static final String MESSAGE_SENDER_ID_KEY = "senderId";
+	public static final String MESSAGE_SENDER_FEDERATED_IDENTITY_KEY = "senderFederatedIdentity";
 
-	// URL Sfor Places / Maps APIs
+	// URLs for Places / Maps APIs
 	public static final String PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/search/json?";
 	public static final String REVERSE_GEOCODE_URL = "https://maps.google.com/maps/api/geocode/json?";
 

@@ -27,6 +27,26 @@
   "ownerName" : "neenaparikh.com",
   "packagePath" : "locationsender",
   "methods" : {
+    "deviceinfoendpoint.findDeviceByEmail" : {
+      "path" : "findDeviceByEmail/{email}",
+      "httpMethod" : "GET",
+      "scopes" : [ ],
+      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
+      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByEmail",
+      "request" : {
+        "parameters" : {
+          "email" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
     "deviceinfoendpoint.getDeviceInfo" : {
       "path" : "deviceinfo/{id}",
       "httpMethod" : "GET",
@@ -62,16 +82,21 @@
         "body" : "autoTemplate(backendResponse)"
       }
     },
-    "deviceinfoendpoint.updateDeviceInfo" : {
-      "path" : "deviceinfo",
-      "httpMethod" : "PUT",
+    "deviceinfoendpoint.findDeviceByPhone" : {
+      "path" : "findDeviceByPhone/{phone}",
+      "httpMethod" : "GET",
       "scopes" : [ ],
       "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
       "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo",
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByPhone",
       "request" : {
-        "body" : "autoTemplate(backendRequest)",
-        "bodyName" : "resource"
+        "parameters" : {
+          "phone" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
       },
       "response" : {
         "body" : "autoTemplate(backendResponse)"
@@ -95,6 +120,21 @@
       },
       "response" : {
         "body" : "empty"
+      }
+    },
+    "deviceinfoendpoint.updateDeviceInfo" : {
+      "path" : "deviceinfo",
+      "httpMethod" : "PUT",
+      "scopes" : [ ],
+      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
+      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo",
+      "request" : {
+        "body" : "autoTemplate(backendRequest)",
+        "bodyName" : "resource"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
       }
     },
     "deviceinfoendpoint.listDeviceInfo" : {
@@ -152,6 +192,9 @@
           },
           "userFederatedIdentity" : {
             "type" : "string"
+          },
+          "phoneNumber" : {
+            "type" : "string"
           }
         }
       },
@@ -172,6 +215,11 @@
       }
     },
     "methods" : {
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByEmail" : {
+        "response" : {
+          "$ref" : "DeviceInfo"
+        }
+      },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.getDeviceInfo" : {
         "response" : {
           "$ref" : "DeviceInfo"
@@ -185,6 +233,13 @@
           "$ref" : "DeviceInfo"
         }
       },
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByPhone" : {
+        "response" : {
+          "$ref" : "DeviceInfo"
+        }
+      },
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.removeDeviceInfo" : {
+      },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo" : {
         "request" : {
           "$ref" : "DeviceInfo"
@@ -192,8 +247,6 @@
         "response" : {
           "$ref" : "DeviceInfo"
         }
-      },
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.removeDeviceInfo" : {
       },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.listDeviceInfo" : {
         "response" : {

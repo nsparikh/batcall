@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/_m-zB49A46cZ55U8C-LLcPSUSYo\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/Uyvm3S3JQmOZ3kFdXVuBKn9lrA0\"",
  "discoveryVersion": "v1",
  "id": "messageEndpoint:v1",
  "name": "messageEndpoint",
@@ -8,7 +8,7 @@
  "description": "This is an API",
  "ownerDomain": "neenaparikh.com",
  "ownerName": "neenaparikh.com",
- "packagePath": "batsignal",
+ "packagePath": "locationsender",
  "icons": {
   "x16": "http://www.google.com/images/icons/product/search-16.gif",
   "x32": "http://www.google.com/images/icons/product/search-32.gif"
@@ -64,10 +64,21 @@
    "location": "query"
   }
  },
+ "schemas": {
+  "BooleanResult": {
+   "id": "BooleanResult",
+   "type": "object",
+   "properties": {
+    "result": {
+     "type": "boolean"
+    }
+   }
+  }
+ },
  "methods": {
   "sendMessage": {
    "id": "messageEndpoint.sendMessage",
-   "path": "{name}/{latitude}/{longitude}/{duration}",
+   "path": "{name}/{latitude}/{longitude}/{duration}/{recipientEmail}/{recipientPhone}",
    "httpMethod": "POST",
    "parameters": {
     "duration": {
@@ -92,14 +103,29 @@
      "type": "string",
      "required": true,
      "location": "path"
+    },
+    "recipientEmail": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    },
+    "recipientPhone": {
+     "type": "string",
+     "required": true,
+     "location": "path"
     }
    },
    "parameterOrder": [
     "name",
     "latitude",
     "longitude",
-    "duration"
-   ]
+    "duration",
+    "recipientEmail",
+    "recipientPhone"
+   ],
+   "response": {
+    "$ref": "BooleanResult"
+   }
   }
  }
 }

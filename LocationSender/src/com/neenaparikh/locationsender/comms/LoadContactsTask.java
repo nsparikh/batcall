@@ -1,7 +1,8 @@
 package com.neenaparikh.locationsender.comms;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -10,19 +11,26 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
-import android.widget.ArrayAdapter;
+import android.util.Log;
 import android.widget.ListView;
 
+import com.neenaparikh.locationsender.ContactsArrayAdapter;
 import com.neenaparikh.locationsender.R;
+import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
+import com.neenaparikh.locationsender.deviceinfoendpoint.model.DeviceInfo;
+import com.neenaparikh.locationsender.model.Person;
+import com.neenaparikh.locationsender.util.HelperMethods;
 
 /**
  * An asynchronous task to load the user's contact list in a background
  * thread, by using the Contacts Content Provider.
  * 
+ * Task takes in no paremeters and returns a list of contacts as Person objects.
+ * 
  * @author neenaparikh
  *
  */
-public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>> {
+public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<Person>> {
 	
 	// Projection array and selection for Contacts cursor
 	// TODO: change this to get necessary info from contacts once backend is setup
@@ -42,12 +50,13 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>
 
 	private Activity mActivity;
 	private ProgressDialog pDialog;
+	
+	private Deviceinfoendpoint deviceInfoEndpoint;
 
-	private List<String> contactNamesList;
 
 	public LoadContactsTask(Activity activity) {
 		mActivity = activity;
-		contactNamesList = new ArrayList<String>();
+		deviceInfoEndpoint = HelperMethods.getDeviceInfoEndpoint(activity);
 	}
 
 	/**
@@ -75,15 +84,20 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>
 	 * Retrieves list of contact names in background thread
 	 **/
 	@Override
-	protected ArrayList<String> doInBackground(Void... args) {
-		return getAllContacts();
+	protected ArrayList<Person> doInBackground(Void... args) {
+		try {
+			return getAllContacts();
+		} catch (IOException e) {
+			Log.e(LoadContactsTask.class.getName(), "IOException: " + e.getMessage());
+			return new ArrayList<Person>();
+		}
 	}
 
 	/**
 	 * After the background task completes, display the results in the list view
 	 */
 	@Override
-	protected void onPostExecute(ArrayList<String> result) {
+	protected void onPostExecute(final ArrayList<Person> result) {
 		// Dismiss the dialog if it's showing
 		if (pDialog.isShowing()) {
 			pDialog.dismiss();
@@ -95,8 +109,7 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>
 
 				// Bind the list of contact names to the list view
 				final ListView contactsListView = (ListView) mActivity.findViewById(R.id.contacts_list_view);
-				contactsListView.setAdapter(new ArrayAdapter<String>(
-						mActivity, android.R.layout.simple_list_item_1, contactNamesList));
+				contactsListView.setAdapter(new ContactsArrayAdapter(mActivity, R.layout.contact_list_item, result));
 
 			}
 		});
@@ -107,9 +120,10 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>
 	/**
 	 * Helper method to retrieve the list of contacts from the phone.
 	 * @return
+	 * @throws IOException 
 	 */
-	private ArrayList<String> getAllContacts() {
-		ArrayList<String> contactNames = new ArrayList<String>();
+	private ArrayList<Person> getAllContacts() throws IOException {
+		ArrayList<Person> contacts = new ArrayList<Person>();
 		
 		// Initialize cursor for contacts 
 		ContentResolver contentResolver = mActivity.getContentResolver();
@@ -124,6 +138,7 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>
 		// Iterate over all contacts
 		int currentIndex = 0;
 		while (cursor.moveToNext()) {
+			Person currentPerson = new Person();
 			
 			// Publish progress to show in progress dialog
 			publishProgress(currentIndex);
@@ -131,7 +146,7 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>
 			// Get ID and name
 			int contactId = cursor.getInt(CONTACT_ID_INDEX);
 			String name = cursor.getString(CONTACT_NAME_INDEX);
-			contactNames.add(name);
+			currentPerson.setName(name);
 			
 			// Get photo URI
 			Uri photoUri = Uri.EMPTY;
@@ -139,6 +154,7 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>
 			if (uriString != null && uriString.length() > 0) {
 				photoUri = Uri.parse(uriString);
 			}
+			currentPerson.setPhotoUri(photoUri);
 			
 			// Get phone numbers, if any
 			ArrayList<String> phoneNumbers = new ArrayList<String>();
@@ -149,17 +165,60 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<String>
 						ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId, null, null);
 				phoneCursor.moveToFirst();
 				while (phoneCursor.moveToNext()) {
-					phoneNumbers.add(phoneCursor.getString(
-							phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
+					String phone = phoneCursor.getString(phoneCursor.getColumnIndex(
+							ContactsContract.CommonDataKinds.Phone.NUMBER));
+					phoneNumbers.add(HelperMethods.flattenPhone(phone));
 				}
 				phoneCursor.close();
 			}
+			currentPerson.setPhones(phoneNumbers);
 			
+			// Check for registered devices with each phone number
+			DeviceInfo matchedDevice = null;
+			for (String phone : phoneNumbers) {
+				matchedDevice = deviceInfoEndpoint.findDeviceByPhone(phone).execute();
+				if (matchedDevice != null) break;
+			}
+			if (matchedDevice != null) {
+				currentPerson.setRegistered(true);
+				currentPerson.setRegisteredPhone(matchedDevice.getPhoneNumber());
+				currentPerson.setRegisteredEmail(matchedDevice.getUserEmail());
+			}
+			
+			// Get email addresses, if any
+			ArrayList<String> emailAddresses = new ArrayList<String>();
+			Cursor emailCursor = contentResolver.query(
+					ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, 
+					ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = " + contactId, null, null);
+			emailCursor.moveToFirst();
+			while (emailCursor.moveToNext()) {
+				emailAddresses.add(emailCursor.getString(
+						emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)));
+			}
+			emailCursor.close();
+			currentPerson.setEmails(emailAddresses);
+			
+			// Check for registered devices with email addresses if necessary
+			if (matchedDevice == null) {
+				for (String email : emailAddresses) {
+					matchedDevice = deviceInfoEndpoint.findDeviceByEmail(email).execute();
+					if (matchedDevice != null) break;
+				}
+				if (matchedDevice != null) {
+					currentPerson.setRegistered(true);
+					currentPerson.setRegisteredEmail(matchedDevice.getUserEmail());
+					currentPerson.setRegisteredPhone(matchedDevice.getPhoneNumber());
+				}
+			}
+			
+			contacts.add(currentPerson);
 			currentIndex++;
 		}
 		
 		cursor.close();
-		return contactNames;
+		
+		Collections.sort(contacts);
+		return contacts;
 	}
 
 }

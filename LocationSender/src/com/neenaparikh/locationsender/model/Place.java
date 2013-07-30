@@ -130,17 +130,20 @@ public class Place implements Parcelable {
 	 * @return the place ID
 	 */
 	public String getId() {
+		if (this.id == null) return "";
 		return this.id;
 	}
 	
 	public void setId(String id) {
 		this.id = id;
+		if (id == null) this.id = "";
 	}
 	
 	/**
 	 * @return the name of the place
 	 */
 	public String getName() {
+		if (this.name == null) return "";
 		return this.name;
 	}
 	
@@ -150,12 +153,14 @@ public class Place implements Parcelable {
 	 */
 	public void setName(String name) {
 		this.name = name;
+		if (name == null) this.name = "";
 	}
 	
 	/**
 	 * @return the address of the place
 	 */
 	public String getAddress() {
+		if (this.address == null) return "";
 		return this.address;
 	}
 	
@@ -165,12 +170,14 @@ public class Place implements Parcelable {
 	 */
 	public void setAddress(String address) {
 		this.address = address;
+		if (address == null) this.address = "";
 	}
 	
 	/**
 	 * @return the refernece
 	 */
 	public String getReference() {
+		if (this.reference == null) return "";
 		return this.reference;
 	}
 	
@@ -180,6 +187,7 @@ public class Place implements Parcelable {
 	 */
 	public void setReference(String reference) {
 		this.reference = reference;
+		if (reference == null) this.reference = "";
 	}
 	
 	/**
@@ -232,20 +240,20 @@ public class Place implements Parcelable {
 	 * @return a string representation of the place
 	 */
 	public String toString() {
-		return this.name;
+		return getName();
 	}
 	
 	/**
 	 * @return a detailed string representation of the place
 	 */
 	public String toStringVerbose() {
-		return "ID: " + this.id + 
-				"\nName: " + this.name + 
-				"\nAddress: " + this.address +
-				"\nReference: " + this.reference + 
-				"\nLatitude: " + this.geometry.location.latitude + 
-				"\nLongitude: " + this.geometry.location.longitude + 
-				"\nDuration: " + this.duration;
+		return "ID: " + getId() + 
+				"\nName: " + getName() + 
+				"\nAddress: " + getAddress() +
+				"\nReference: " + getReference() + 
+				"\nLatitude: " + getLatitude() + 
+				"\nLongitude: " + getLongitude() + 
+				"\nDuration: " + getDuration();
 	}
 	
 	/**
@@ -262,13 +270,13 @@ public class Place implements Parcelable {
 	 * Writes object data to parcel
 	 */
 	public void writeToParcel(Parcel out, int flags) {
-        out.writeString(id);
-        out.writeString(name);
-        out.writeString(address);
-        out.writeString(reference);
-        out.writeDouble(geometry.location.latitude);
-        out.writeDouble(geometry.location.longitude);
-        out.writeInt(duration);
+        out.writeString(getId());
+        out.writeString(getName());
+        out.writeString(getAddress());
+        out.writeString(getReference());
+        out.writeDouble(getLatitude());
+        out.writeDouble(getLongitude());
+        out.writeInt(getDuration());
     }
 
 	/**
@@ -293,6 +301,7 @@ public class Place implements Parcelable {
         this.name = in.readString();
         this.address = in.readString();
         this.reference = in.readString();
+		this.geometry = new MyGeometry();
         this.geometry.location.latitude = in.readDouble();
         this.geometry.location.longitude = in.readDouble();
         this.duration = in.readInt();

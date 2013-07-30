@@ -52,6 +52,7 @@ public class MainActivity extends Activity {
 		// Show a progress dialog
 		pDialog = new ProgressDialog(this);
 		pDialog.setMessage("Registering...");
+		pDialog.setCancelable(false);
 		pDialog.show();
 
 		// Register the device
@@ -128,9 +129,7 @@ public class MainActivity extends Activity {
 	 *
 	 */
 	public void onClickRetry(View view) {
-		Intent intent = new Intent(this, MainActivity.class);
-		startActivity(intent);
-		finish();
+		onSignIn();
 	}
 
 }

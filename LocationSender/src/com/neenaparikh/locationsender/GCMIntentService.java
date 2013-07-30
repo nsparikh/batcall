@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
@@ -21,6 +22,7 @@ import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
 import com.neenaparikh.locationsender.deviceinfoendpoint.model.DeviceInfo;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.Constants;
+import com.neenaparikh.locationsender.util.HelperMethods;
 
 
 /**
@@ -32,7 +34,7 @@ import com.neenaparikh.locationsender.util.Constants;
  * broadcast messages from the it.
  */
 public class GCMIntentService extends GCMBaseIntentService {
-	private final Deviceinfoendpoint endpoint;
+	private Deviceinfoendpoint endpoint;
 	
 
 	/**
@@ -84,6 +86,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onRegistered(Context context, String registration) {
+		endpoint = HelperMethods.getDeviceInfoEndpoint(context);
+		
 		/*
 		 * This is some special exception-handling code that we're using to work around a problem
 		 * with the DevAppServer and methods that return null in App Engine 1.7.5.
@@ -91,7 +95,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		boolean alreadyRegisteredWithEndpointServer = false;
 
 		try {
-			// Using cloud endpoints, see if the device has already been
+			// Using cloud endpoints, see if the device has already been registered
 			DeviceInfo existingInfo = endpoint.getDeviceInfo(registration).execute();
 			if (existingInfo != null && registration.equals(existingInfo.getDeviceRegistrationID())) {
 				alreadyRegisteredWithEndpointServer = true;
@@ -109,11 +113,17 @@ public class GCMIntentService extends GCMBaseIntentService {
 				 * registered.
 				 */
 				DeviceInfo deviceInfo = new DeviceInfo();
-				endpoint.insertDeviceInfo(deviceInfo.setDeviceRegistrationID(registration)
-						.setTimestamp(System.currentTimeMillis())
-						.setDeviceInformation(URLEncoder
-								.encode(android.os.Build.MANUFACTURER + " " + android.os.Build.PRODUCT, "UTF-8")))
-								.execute();
+				deviceInfo.setDeviceRegistrationID(registration);
+				deviceInfo.setTimestamp(System.currentTimeMillis());
+				deviceInfo.setDeviceInformation(URLEncoder.encode(
+						android.os.Build.MANUFACTURER + " " + android.os.Build.PRODUCT, "UTF-8"));
+				
+				// Set device phone number. Note: may only work for U.S. phone numbers!
+				TelephonyManager tManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+				String phone = tManager.getLine1Number();
+				if (phone != null) deviceInfo.setPhoneNumber(HelperMethods.flattenPhone(phone));
+						
+				endpoint.insertDeviceInfo(deviceInfo).execute();
 			}
 		} catch (IOException e) {
 			Log.e(GCMIntentService.class.getName(),
@@ -161,15 +171,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 		
 		// Get notification info from intent
 		Place testPlace = new Place();
-		testPlace.setName(intent.getStringExtra("name"));
-		testPlace.setAddress(intent.getStringExtra("address"));
-		testPlace.setLatitude(Double.parseDouble(intent.getStringExtra("latitude")));
-		testPlace.setLongitude(Double.parseDouble(intent.getStringExtra("longitude")));
-		testPlace.setDuration(Integer.parseInt(intent.getStringExtra("duration")));
+		testPlace.setName(intent.getStringExtra(Constants.MESSAGE_PLACE_NAME_KEY));
+		testPlace.setLatitude(Double.parseDouble(intent.getStringExtra(Constants.MESSAGE_PLACE_LATITUDE_KEY)));
+		testPlace.setLongitude(Double.parseDouble(intent.getStringExtra(Constants.MESSAGE_PLACE_LONGITUDE_KEY)));
+		testPlace.setDuration(Integer.parseInt(intent.getStringExtra(Constants.MESSAGE_DURATION_KEY)));
 		
 		// TODO: get sender info?
-		showNotification(testPlace, intent.getStringExtra("senderName"), 
-				Long.parseLong(intent.getStringExtra("timestamp")));
+		showNotification(testPlace, intent.getStringExtra(Constants.MESSAGE_SENDER_NAME_KEY), 
+				Long.parseLong(intent.getStringExtra(Constants.MESSAGE_TIMESTAMP_KEY)));
 	}
 	
 	/**

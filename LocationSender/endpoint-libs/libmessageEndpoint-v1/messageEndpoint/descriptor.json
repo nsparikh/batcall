@@ -1,16 +1,16 @@
 {
   "files": [
     {
-      "path": "locationsender-messageEndpoint-v1-20130729043710-java-1.15.0-rc-sources.jar", 
+      "path": "locationsender-messageEndpoint-v1-20130730051402-java-1.15.0-rc-sources.jar", 
       "type": "source"
     }, 
     {
-      "path": "locationsender-messageEndpoint-v1-20130729043710-java-1.15.0-rc.jar.properties", 
+      "path": "locationsender-messageEndpoint-v1-20130730051402-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
   "kind": "discovery#directoryItem", 
-  "moduleName": "com.neenaparikh.batsignal", 
+  "moduleName": "com.neenaparikh.locationsender", 
   "name": "messageEndpoint", 
   "language": "java", 
   "proguard-config": "proguard-google-api-client.txt", 
@@ -689,7 +689,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130729043710, 
+  "revision": 20130730051402, 
   "id": "messageEndpoint:v1", 
-  "modulePath": "com/neenaparikh/batsignal"
+  "modulePath": "com/neenaparikh/locationsender"
 }

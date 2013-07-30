@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/jIVg7t3wMAyAUax21CAS1zWsorY\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/xP7Z_Q3QanhFGTXP-K3syoy0qaE\"",
  "discoveryVersion": "v1",
  "id": "deviceinfoendpoint:v1",
  "name": "deviceinfoendpoint",
@@ -90,6 +90,9 @@
     "deviceRegistrationID": {
      "type": "string"
     },
+    "phoneNumber": {
+     "type": "string"
+    },
     "timestamp": {
      "type": "string",
      "format": "int64"
@@ -113,6 +116,42 @@
   }
  },
  "methods": {
+  "findDeviceByEmail": {
+   "id": "deviceinfoendpoint.findDeviceByEmail",
+   "path": "findDeviceByEmail/{email}",
+   "httpMethod": "GET",
+   "parameters": {
+    "email": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "email"
+   ],
+   "response": {
+    "$ref": "DeviceInfo"
+   }
+  },
+  "findDeviceByPhone": {
+   "id": "deviceinfoendpoint.findDeviceByPhone",
+   "path": "findDeviceByPhone/{phone}",
+   "httpMethod": "GET",
+   "parameters": {
+    "phone": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "phone"
+   ],
+   "response": {
+    "$ref": "DeviceInfo"
+   }
+  },
   "getDeviceInfo": {
    "id": "deviceinfoendpoint.getDeviceInfo",
    "path": "deviceinfo/{id}",
