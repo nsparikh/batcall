@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.neenaparikh.locationsender.messageEndpoint.MessageEndpoint;
-import com.neenaparikh.locationsender.messageEndpoint.model.BooleanResult;
 import com.neenaparikh.locationsender.model.Person;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.HelperMethods;
@@ -25,7 +24,7 @@ import com.neenaparikh.locationsender.util.HelperMethods;
  *
  */
 public class SendMessageTask extends AsyncTask<Person, Void, List<Person>> {
-	private MessageEndpoint messageEndpoint;
+	private MessageEndpoint endpoint;
 	private Place place;
 
 	/**
@@ -33,7 +32,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, List<Person>> {
 	 * @param context The context
 	 */
 	public SendMessageTask(Context context, Place place) {
-		this.messageEndpoint = HelperMethods.getMessageEndpoint(context);
+		this.endpoint = HelperMethods.getMessageEndpoint(context);
 		this.place = place;
 	}
 
@@ -47,18 +46,14 @@ public class SendMessageTask extends AsyncTask<Person, Void, List<Person>> {
 		for (Person recipient : params) {
 			if (recipient.isRegistered()) {
 				try {
-					BooleanResult result = messageEndpoint.sendMessage(place.getName(), 
-							place.getLatitude(), place.getLongitude(), place.getDuration(), 
-							recipient.getRegisteredEmail(), recipient.getRegisteredPhone())
-							.execute();
+					endpoint.sendMessage(place.getName(), place.getLatitude(), 
+							place.getLongitude(), place.getDuration(), recipient.getRegisteredPhone(), 
+							recipient.getRegisteredEmail()).execute();
 
-					// If sending the message was unsuccessful, add to the list
-					if (!result.getResult()) {
-						peopleNotFound.add(recipient);
-						Log.e(SendMessageTask.class.getName(), "Cound not send message to " + recipient.getName());
-					}
 				} catch (IOException e) {
 					Log.e(SendMessageTask.class.getName(), "IOException: " + e.getMessage());
+					Log.e(SendMessageTask.class.getName(), "Cound not send message to " + recipient.getName());
+					e.printStackTrace();
 					peopleNotFound.add(recipient);
 				}
 			} else {

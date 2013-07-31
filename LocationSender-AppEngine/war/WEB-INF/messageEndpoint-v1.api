@@ -28,7 +28,7 @@
   "packagePath" : "locationsender",
   "methods" : {
     "messageEndpoint.sendMessage" : {
-      "path" : "sendMessage/{name}/{latitude}/{longitude}/{duration}/{recipientEmail}/{recipientPhone}",
+      "path" : "sendMessage/{placeName}/{latitude}/{longitude}/{duration}/{recipientPhone}/{recipientEmail}",
       "httpMethod" : "POST",
       "scopes" : [ ],
       "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
@@ -36,7 +36,7 @@
       "rosyMethod" : "com.neenaparikh.locationsender.MessageEndpoint.sendMessage",
       "request" : {
         "parameters" : {
-          "name" : {
+          "placeName" : {
             "type" : "string",
             "required" : true
           },
@@ -52,11 +52,11 @@
             "type" : "int32",
             "required" : true
           },
-          "recipientEmail" : {
+          "recipientPhone" : {
             "type" : "string",
             "required" : true
           },
-          "recipientPhone" : {
+          "recipientEmail" : {
             "type" : "string",
             "required" : true
           }

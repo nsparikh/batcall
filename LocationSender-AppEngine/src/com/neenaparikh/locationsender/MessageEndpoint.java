@@ -1,7 +1,8 @@
 package com.neenaparikh.locationsender;
 
 import java.io.IOException;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -13,6 +14,7 @@ import com.google.android.gcm.server.Sender;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
+import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
 
@@ -23,15 +25,15 @@ import com.google.appengine.api.users.User;
  * were registered with this application (via DeviceInfoEndpoint).
  */
 @Api(
-		name = "messageEndpoint", 
-		namespace = @ApiNamespace(
-				ownerDomain = "neenaparikh.com", 
-				ownerName = "neenaparikh.com", 
-				packagePath="locationsender"
-		),
-		clientIds = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com",
-					 "655975699066.apps.googleusercontent.com"},
-		audiences = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com"}
+	name = "messageEndpoint", 
+	namespace = @ApiNamespace(
+		ownerDomain = "neenaparikh.com", 
+		ownerName = "neenaparikh.com", 
+		packagePath="locationsender"
+	),
+	clientIds = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com",
+				 "655975699066.apps.googleusercontent.com"},
+	audiences = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com"}
 )
 public class MessageEndpoint {
 	private static final String API_KEY = "AIzaSyA8YrzfpyrPzbfSY-pKLpulbWOPnQ-YAlU";
@@ -40,73 +42,84 @@ public class MessageEndpoint {
 
 	/**
 	 * This accepts a message and persists it in the AppEngine datastore, it 
-	 * will also broadcast the message to the appropriate devices
-	 * via Google Cloud Messaging
+	 * will also broadcast the message to the recipient device(s) associated with 
+	 * the given phone number or email address (if any are found) via Google Cloud Messaging
 	 *  
-	 * @param placeName The place name
+	 * @param placeName The name of the place associated with this message
 	 * @param latitude The latitude coordinate of the place
 	 * @param longitude The longitude coordinate of the place
-	 * @param duration The duration of the message
-	 * @param recipientEmail The recipient's email address, if any
-	 * @param recipientPhone The recipient's phone number, if any
-	 * @param user The authenticated user who is sending the message
+	 * @param duration The duration of this message
+	 * @param recipientPhone The recipient's phone number
+	 * @param recipientPhone The recipient's email address
 	 * @return 
 	 * @throws IOException
-	 * @throws SQLException 
 	 * @throws OAuthRequestException 
 	 */
 	@ApiMethod(name = "sendMessage")
-	public BooleanResult sendMessage(@Named("name") String placeName, 
-			@Named("latitude") double latitude, 
-			@Named("longitude") double longitude, 
-			@Named("duration") int duration, 
-			@Named("recipientEmail") String recipientEmail, 
+	public BooleanResult sendMessage(@Named("placeName") String placeName, 
+			@Named("latitude") double latitude,
+			@Named("longitude") double longitude,
+			@Named("duration") int duration,
 			@Named("recipientPhone") String recipientPhone,
+			@Named("recipientEmail") String recipientEmail,
 			User user) throws OAuthRequestException {
-
+		
 		if (user == null) {
-			// This means we're not authenticated
-			throw new OAuthRequestException("User is not authorized");
+			// This means we're not authorized
+			throw new OAuthRequestException("User not authorized");
 		}
-
-		// Try to find user by email or phone. If not found, throw exception.
-		DeviceInfo matchedDevice = null;
-		if (recipientEmail != null) 
-			matchedDevice = endpoint.findDeviceByEmail(recipientEmail);
-		if (matchedDevice == null && recipientPhone != null) 
-			matchedDevice = endpoint.findDeviceByPhone(recipientPhone);
-		if (matchedDevice == null) return new BooleanResult(false); 
-
-		// Now we have the recipient device - create the message and persist it
-
-		// Create a MessageData entity and persist it
+		
+		// Find recipient devices. First search by phone number, then by email
+		CollectionResponse<DeviceInfo> recipientList = null;
+		DeviceInfo matchedPhone = endpoint.findDeviceByPhone(recipientPhone);
+		if (matchedPhone == null) {
+			// Didn't find any devices with the phone number, now check email
+			recipientList = endpoint.findDevicesByEmail(recipientEmail);
+			
+			if (recipientList == null) {
+				// This means we found no matched devices - don't continue
+				return new BooleanResult(false);
+			}
+		} else {
+			List<DeviceInfo> temp = new ArrayList<DeviceInfo>();
+			temp.add(matchedPhone);
+			recipientList = CollectionResponse.<DeviceInfo> builder().setItems(temp).build();
+		}
+		
+		
+		Sender sender = new Sender(API_KEY);
+		
+		// Create MessageData object with place information
 		MessageData messageObj = new MessageData();
 		messageObj.setPlaceName(placeName);
 		messageObj.setLatitude(latitude);
 		messageObj.setLongitude(longitude);
 		messageObj.setDuration(duration);
 		messageObj.setTimestamp(System.currentTimeMillis());
-
-		// Add details of the User who is sending the message
+		
+		// Add sender info
 		messageObj.setSenderName(user.getNickname());
 		messageObj.setSenderEmail(user.getEmail());
 		messageObj.setSenderAuthDomain(user.getAuthDomain());
-		messageObj.setSenderId(user.getUserId());
 		messageObj.setSenderFederatedIdentity(user.getFederatedIdentity());
-
+		messageObj.setSenderId(user.getUserId());
+		
+		// Persist the object to the datastore
 		EntityManager mgr = getEntityManager();
 		try {
 			mgr.persist(messageObj);
 		} finally {
 			mgr.close();
 		}
-
-		// Send message to recipient
-		Sender sender = new Sender(API_KEY);
+		
+		// Send object to recipients
 		try {
-			doSendViaGcm(messageObj, sender, matchedDevice, user);
+			for (DeviceInfo deviceInfo : recipientList.getItems())
+				doSendViaGcm(messageObj, sender, deviceInfo, user);
 			return new BooleanResult(true);
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 			return new BooleanResult(false);
 		}
 
@@ -115,31 +128,35 @@ public class MessageEndpoint {
 	/**
 	 * Sends the message using the Sender object to the registered device.
 	 * 
-	 * @param message The message to be sent in the GCM ping to the device.
+	 * @param messageObj The message to be sent in the GCM ping to the device.
 	 * @param sender The Sender object to be used for ping,
-	 * @param deviceInfo The registration id of the device.
+	 * @param deviceInfo The registration id of the recipient device.
 	 * @return Result the result of the ping.
 	 * @throws OAuthRequestException 
 	 */
-	private static Result doSendViaGcm(MessageData message, Sender sender,
+	private static Result doSendViaGcm(MessageData messageObj, Sender sender,
 			DeviceInfo deviceInfo, User user) throws IOException, OAuthRequestException {
 
 		// This message object is a Google Cloud Messaging object, it is NOT 
 		// related to the MessageData class
-		Message msg = new Message.Builder().addData("placeName", message.getPlaceName())
-				.addData("latitude", String.valueOf(message.getLatitude()))
-				.addData("longitude", String.valueOf(message.getLongitude()))
-				.addData("duration", String.valueOf(message.getDuration()))
-				.addData("timestamp", String.valueOf(message.getTimestamp()))
-				.addData("senderName", message.getSenderName())
-				.addData("senderEmail", message.getSenderEmail())
-				.addData("senderAuthDomain", message.getSenderAuthDomain())
-				.addData("senderId", message.getSenderId())
-				.addData("senderFederatedIdentity", message.getSenderFederatedIdentity())
-				.build();
-
+		Message.Builder builder = new Message.Builder();
+		builder.addData("placeName", messageObj.getPlaceName());
+		builder.addData("latitude", String.valueOf(messageObj.getLatitude()));
+		builder.addData("longitude", String.valueOf(messageObj.getLongitude()));
+		builder.addData("duration", String.valueOf(messageObj.getDuration()));
+		builder.addData("timestamp", String.valueOf(messageObj.getTimestamp()));
+		builder.addData("senderName", messageObj.getSenderName());
+		builder.addData("senderEmail", messageObj.getSenderEmail());
+		builder.addData("senderAuthDomain", messageObj.getSenderAuthDomain());
+		builder.addData("senderFederatedIdentity", messageObj.getSenderFederatedIdentity());
+		builder.addData("senderId", messageObj.getSenderId());
+		Message msg = builder.build();
+		
+		
 		// Send the message with up to 5 retries
 		Result result = sender.send(msg, deviceInfo.getDeviceRegistrationID(), 5);
+		
+		// Check result
 		if (result.getMessageId() != null) {
 			String canonicalRegId = result.getCanonicalRegistrationId();
 			if (canonicalRegId != null) {
@@ -162,18 +179,17 @@ public class MessageEndpoint {
 	}
 	
 	/**
-	 * Custom boolean result class
+	 * Wrapper class for boolean result 
+	 * @author neenaparikh
+	 *
 	 */
 	public class BooleanResult {
-		private boolean result;
-		private BooleanResult(boolean result) {
+		final boolean result;
+		public BooleanResult(boolean result) {
 			this.result = result;
 		}
 		public boolean getResult() {
 			return result;
-		}
-		public void setResult(boolean result) {
-			this.result = result;
 		}
 	}
 }

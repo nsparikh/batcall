@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/Uyvm3S3JQmOZ3kFdXVuBKn9lrA0\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/ldoxR6g2hr4rd243Lc5E8j_qU2M\"",
  "discoveryVersion": "v1",
  "id": "messageEndpoint:v1",
  "name": "messageEndpoint",
@@ -78,7 +78,7 @@
  "methods": {
   "sendMessage": {
    "id": "messageEndpoint.sendMessage",
-   "path": "{name}/{latitude}/{longitude}/{duration}/{recipientEmail}/{recipientPhone}",
+   "path": "{placeName}/{latitude}/{longitude}/{duration}/{recipientPhone}/{recipientEmail}",
    "httpMethod": "POST",
    "parameters": {
     "duration": {
@@ -99,7 +99,7 @@
      "format": "double",
      "location": "path"
     },
-    "name": {
+    "placeName": {
      "type": "string",
      "required": true,
      "location": "path"
@@ -116,12 +116,12 @@
     }
    },
    "parameterOrder": [
-    "name",
+    "placeName",
     "latitude",
     "longitude",
     "duration",
-    "recipientEmail",
-    "recipientPhone"
+    "recipientPhone",
+    "recipientEmail"
    ],
    "response": {
     "$ref": "BooleanResult"

@@ -16,8 +16,6 @@ import android.widget.ListView;
 
 import com.neenaparikh.locationsender.ContactsArrayAdapter;
 import com.neenaparikh.locationsender.R;
-import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
-import com.neenaparikh.locationsender.deviceinfoendpoint.model.DeviceInfo;
 import com.neenaparikh.locationsender.model.Person;
 import com.neenaparikh.locationsender.util.HelperMethods;
 
@@ -51,12 +49,10 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<Person>
 	private Activity mActivity;
 	private ProgressDialog pDialog;
 	
-	private Deviceinfoendpoint deviceInfoEndpoint;
 
 
 	public LoadContactsTask(Activity activity) {
 		mActivity = activity;
-		deviceInfoEndpoint = HelperMethods.getDeviceInfoEndpoint(activity);
 	}
 
 	/**
@@ -173,17 +169,8 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<Person>
 			}
 			currentPerson.setPhones(phoneNumbers);
 			
-			// Check for registered devices with each phone number
-			DeviceInfo matchedDevice = null;
-			for (String phone : phoneNumbers) {
-				matchedDevice = deviceInfoEndpoint.findDeviceByPhone(phone).execute();
-				if (matchedDevice != null) break;
-			}
-			if (matchedDevice != null) {
-				currentPerson.setRegistered(true);
-				currentPerson.setRegisteredPhone(matchedDevice.getPhoneNumber());
-				currentPerson.setRegisteredEmail(matchedDevice.getUserEmail());
-			}
+			// TODO: Check for registered devices with each phone number
+			
 			
 			// Get email addresses, if any
 			ArrayList<String> emailAddresses = new ArrayList<String>();
@@ -198,18 +185,8 @@ public class LoadContactsTask extends AsyncTask<Void, Integer, ArrayList<Person>
 			emailCursor.close();
 			currentPerson.setEmails(emailAddresses);
 			
-			// Check for registered devices with email addresses if necessary
-			if (matchedDevice == null) {
-				for (String email : emailAddresses) {
-					matchedDevice = deviceInfoEndpoint.findDeviceByEmail(email).execute();
-					if (matchedDevice != null) break;
-				}
-				if (matchedDevice != null) {
-					currentPerson.setRegistered(true);
-					currentPerson.setRegisteredEmail(matchedDevice.getUserEmail());
-					currentPerson.setRegisteredPhone(matchedDevice.getPhoneNumber());
-				}
-			}
+			// TODO: Check for registered devices with email addresses if necessary
+			
 			
 			contacts.add(currentPerson);
 			currentIndex++;

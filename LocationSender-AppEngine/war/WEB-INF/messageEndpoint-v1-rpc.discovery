@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/Uyvm3S3JQmOZ3kFdXVuBKn9lrA0\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/ldoxR6g2hr4rd243Lc5E8j_qU2M\"",
  "discoveryVersion": "v1",
  "id": "messageEndpoint:v1",
  "name": "messageEndpoint",
@@ -92,7 +92,7 @@
      "required": true,
      "format": "double"
     },
-    "name": {
+    "placeName": {
      "type": "string",
      "required": true
     },
@@ -106,12 +106,12 @@
     }
    },
    "parameterOrder": [
-    "name",
+    "placeName",
     "latitude",
     "longitude",
     "duration",
-    "recipientEmail",
-    "recipientPhone"
+    "recipientPhone",
+    "recipientEmail"
    ],
    "returns": {
     "$ref": "BooleanResult"
