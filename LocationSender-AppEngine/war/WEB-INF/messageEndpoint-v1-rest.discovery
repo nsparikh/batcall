@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/ldoxR6g2hr4rd243Lc5E8j_qU2M\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/kljUAQ7jLsrescL9H35Oq3khL5g\"",
  "discoveryVersion": "v1",
  "id": "messageEndpoint:v1",
  "name": "messageEndpoint",
@@ -78,9 +78,14 @@
  "methods": {
   "sendMessage": {
    "id": "messageEndpoint.sendMessage",
-   "path": "{placeName}/{latitude}/{longitude}/{duration}/{recipientPhone}/{recipientEmail}",
+   "path": "{placeName}/{latitude}/{longitude}/{duration}/{deviceRegistrationId}",
    "httpMethod": "POST",
    "parameters": {
+    "deviceRegistrationId": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    },
     "duration": {
      "type": "integer",
      "required": true,
@@ -103,16 +108,6 @@
      "type": "string",
      "required": true,
      "location": "path"
-    },
-    "recipientEmail": {
-     "type": "string",
-     "required": true,
-     "location": "path"
-    },
-    "recipientPhone": {
-     "type": "string",
-     "required": true,
-     "location": "path"
     }
    },
    "parameterOrder": [
@@ -120,8 +115,7 @@
     "latitude",
     "longitude",
     "duration",
-    "recipientPhone",
-    "recipientEmail"
+    "deviceRegistrationId"
    ],
    "response": {
     "$ref": "BooleanResult"

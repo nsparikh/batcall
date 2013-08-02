@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="@string/settings_header_title"
+        android:key="@string/settings_preference_category_key" >
+
+        <CheckBoxPreference android:key="@string/settings_text_checkbox_key"
+            android:title="@string/settings_text_checkbox_title"
+            android:summary="@string/settings_text_checkbox_summary" />
+        
+        <ListPreference android:key="@string/settings_num_recent_contacts_key"
+            android:title="@string/settings_num_recent_contacts_title" 
+            android:entries="@array/num_recent_contacts_choices"
+            android:entryValues="@array/num_recent_contacts_choices_values" />
+        
+    </PreferenceCategory>
+
+</PreferenceScreen>

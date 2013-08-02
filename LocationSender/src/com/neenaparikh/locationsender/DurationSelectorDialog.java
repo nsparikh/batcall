@@ -4,13 +4,12 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
 
-import com.neenaparikh.locationsender.comms.SendMessageTask;
-import com.neenaparikh.locationsender.model.Person;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.Constants;
 
@@ -67,13 +66,9 @@ public class DurationSelectorDialog extends DialogFragment {
 				selectedPlace.setDuration(minutes + 60*hours);
 
 				// Launch new activity to display contacts, pass place object
-				//Intent contactsIntent = new Intent(getActivity(), ContactsActivity.class);
-				//contactsIntent.putExtra(Constants.SELECTED_PLACE_KEY, selectedPlace);
-				//startActivity(contactsIntent);
-				Person test = new Person();
-				test.setRegistered(true);
-				test.setRegisteredEmail("nparikh92@gmail.com");
-				new SendMessageTask(getActivity(), selectedPlace).execute(test);
+				Intent contactsIntent = new Intent(getActivity(), ContactsActivity.class);
+				contactsIntent.putExtra(Constants.SELECTED_PLACE_KEY, selectedPlace);
+				startActivity(contactsIntent);
 			}
 		});
 		builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

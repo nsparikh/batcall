@@ -1,8 +1,7 @@
 package com.neenaparikh.locationsender;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.logging.Logger;
 
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -14,7 +13,6 @@ import com.google.android.gcm.server.Sender;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
-import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
 
@@ -49,9 +47,8 @@ public class MessageEndpoint {
 	 * @param latitude The latitude coordinate of the place
 	 * @param longitude The longitude coordinate of the place
 	 * @param duration The duration of this message
-	 * @param recipientPhone The recipient's phone number
-	 * @param recipientPhone The recipient's email address
-	 * @return 
+	 * @param deviceRegistrationId The recipient's device registration ID
+	 * @return A BooleanResult object indicating whether the message was sent successfully
 	 * @throws IOException
 	 * @throws OAuthRequestException 
 	 */
@@ -60,8 +57,7 @@ public class MessageEndpoint {
 			@Named("latitude") double latitude,
 			@Named("longitude") double longitude,
 			@Named("duration") int duration,
-			@Named("recipientPhone") String recipientPhone,
-			@Named("recipientEmail") String recipientEmail,
+			@Named("deviceRegistrationId") String deviceRegistrationId,
 			User user) throws OAuthRequestException {
 		
 		if (user == null) {
@@ -69,23 +65,9 @@ public class MessageEndpoint {
 			throw new OAuthRequestException("User not authorized");
 		}
 		
-		// Find recipient devices. First search by phone number, then by email
-		CollectionResponse<DeviceInfo> recipientList = null;
-		DeviceInfo matchedPhone = endpoint.findDeviceByPhone(recipientPhone);
-		if (matchedPhone == null) {
-			// Didn't find any devices with the phone number, now check email
-			recipientList = endpoint.findDevicesByEmail(recipientEmail);
-			
-			if (recipientList == null) {
-				// This means we found no matched devices - don't continue
-				return new BooleanResult(false);
-			}
-		} else {
-			List<DeviceInfo> temp = new ArrayList<DeviceInfo>();
-			temp.add(matchedPhone);
-			recipientList = CollectionResponse.<DeviceInfo> builder().setItems(temp).build();
-		}
-		
+		// Find recipient device, if any
+		DeviceInfo matchedDevice = endpoint.getDeviceInfo(deviceRegistrationId);
+		if (matchedDevice == null) return new BooleanResult(false);
 		
 		Sender sender = new Sender(API_KEY);
 		
@@ -114,12 +96,10 @@ public class MessageEndpoint {
 		
 		// Send object to recipients
 		try {
-			for (DeviceInfo deviceInfo : recipientList.getItems())
-				doSendViaGcm(messageObj, sender, deviceInfo, user);
+			doSendViaGcm(messageObj, sender, matchedDevice, user);
 			return new BooleanResult(true);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Logger.getLogger(MessageEndpoint.class.getName()).severe("IOException in sendMessage(): " + e.getMessage());
 			return new BooleanResult(false);
 		}
 
@@ -128,10 +108,10 @@ public class MessageEndpoint {
 	/**
 	 * Sends the message using the Sender object to the registered device.
 	 * 
-	 * @param messageObj The message to be sent in the GCM ping to the device.
-	 * @param sender The Sender object to be used for ping,
-	 * @param deviceInfo The registration id of the recipient device.
-	 * @return Result the result of the ping.
+	 * @param messageObj The message to be sent in the GCM ping to the device
+	 * @param sender The Sender object to be used for ping
+	 * @param deviceInfo The recipient device
+	 * @return Result the result of the ping
 	 * @throws OAuthRequestException 
 	 */
 	private static Result doSendViaGcm(MessageData messageObj, Sender sender,

@@ -6,6 +6,36 @@
 
     <ListView android:id="@+id/contacts_list_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="0dp"
+        android:layout_weight="10" />
+    
+    <RelativeLayout android:id="@+id/activity_contacts_send_button_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp" 
+        android:layout_weight="1"
+        android:paddingTop="8dp"
+        android:orientation="horizontal"
+        android:background="@drawable/blue_top_border">
+        
+        <TextView android:id="@+id/activity_contacts_selected_person_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="75dp"
+            android:paddingLeft="8dp"
+            android:maxLines="2"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="14sp" />
+            
+        <Button android:id="@+id/activity_contacts_send_button"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:onClick="onClickSendButton"
+            android:textSize="14sp"
+            android:text="@string/activity_contacts_send_button_text" />
+        
+    </RelativeLayout>
 
 </LinearLayout>

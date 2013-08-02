@@ -8,6 +8,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -15,11 +16,11 @@ import android.util.Log;
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
 import com.neenaparikh.locationsender.deviceinfoendpoint.model.DeviceInfo;
+import com.neenaparikh.locationsender.messageEndpoint.MessageEndpoint;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.Constants;
 import com.neenaparikh.locationsender.util.HelperMethods;
@@ -34,7 +35,7 @@ import com.neenaparikh.locationsender.util.HelperMethods;
  * broadcast messages from the it.
  */
 public class GCMIntentService extends GCMBaseIntentService {
-	private Deviceinfoendpoint endpoint;
+	private Deviceinfoendpoint endpoint = null;
 	
 
 	/**
@@ -42,12 +43,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	public GCMIntentService() {
 		super(Constants.PROJECT_NUMBER);
-		Deviceinfoendpoint.Builder endpointBuilder = new Deviceinfoendpoint.Builder(
-				AndroidHttp.newCompatibleTransport(), new JacksonFactory(),
-				new HttpRequestInitializer() {
-					public void initialize(HttpRequest httpRequest) {}
-				});
-		endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
 	}
 
 	/**
@@ -86,7 +81,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onRegistered(Context context, String registration) {
-		endpoint = HelperMethods.getDeviceInfoEndpoint(context);
+		if (endpoint == null) endpoint = getAuthDeviceInfoEndpoint(context);
 		
 		/*
 		 * This is some special exception-handling code that we're using to work around a problem
@@ -144,6 +139,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	protected void onUnregistered(Context context, String registrationId) {
+		if (endpoint == null) endpoint = getAuthDeviceInfoEndpoint(context);
 
 		if (registrationId != null && registrationId.length() > 0) {
 
@@ -166,8 +162,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onMessage(Context context, Intent intent) {
-		Log.i(GCMIntentService.class.getName(), 
-				"Message received via Google Cloud Messaging");
 		
 		// Get notification info from intent
 		Place testPlace = new Place();
@@ -176,7 +170,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		testPlace.setLongitude(Double.parseDouble(intent.getStringExtra(Constants.MESSAGE_PLACE_LONGITUDE_KEY)));
 		testPlace.setDuration(Integer.parseInt(intent.getStringExtra(Constants.MESSAGE_DURATION_KEY)));
 		
-		// TODO: get sender info?
+		// Get sender info?
 		showNotification(testPlace, intent.getStringExtra(Constants.MESSAGE_SENDER_NAME_KEY), 
 				Long.parseLong(intent.getStringExtra(Constants.MESSAGE_TIMESTAMP_KEY)));
 	}
@@ -188,13 +182,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	private void showNotification(Place place, String senderName, Long timestamp) {
 		
-		// The intent which is triggered if the notification is selected. 
+		// The intent which is triggered if the notification is selected.
 		// Launches the place in the Maps application
 		Intent notificationIntent = new Intent(Intent.ACTION_VIEW, place.getUri());
 		Notification notification = new Notification.Builder(this)
 			.setSmallIcon(R.drawable.ic_launcher)
-			.setContentTitle("Batsignal from " + senderName)
-			.setContentText(senderName + " is at: " + place.getName() + " for " + place.getDuration())
+			.setContentTitle("FindMe notification from " + senderName)
+			.setContentText(senderName + " is at: " + place.getName() + " until " + 
+					HelperMethods.getTimeAfterStart(timestamp, place.getDuration()))
 			.setWhen(timestamp)
 			.setVibrate(new long[] {0, 30})
 			.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
@@ -216,6 +211,47 @@ public class GCMIntentService extends GCMBaseIntentService {
 		intent.putExtra(Constants.REGISTER_INTENT_SUCCESS_KEY, isSuccessful);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		startActivity(intent);
+	}
+	
+	/**
+	 * Retrieves an authenticated MessageEndpoint object.
+	 * Should only be called after the user has been authenticated.
+	 */
+	public static MessageEndpoint getAuthMessageEndpoint(Context context) {
+		// Get saved account name
+		SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
+		String accountName = sharedPrefs.getString(Constants.SHARED_PREFERENCES_ACCOUNT_NAME_KEY, null);
+
+		// Retrieve credentials
+		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context, Constants.CREDENTIAL_AUDIENCE);
+		credential.setSelectedAccountName(accountName);
+
+		// Create the message endpoint object with credentials
+		MessageEndpoint.Builder endpointBuilder = new MessageEndpoint.Builder(
+				AndroidHttp.newCompatibleTransport(), new JacksonFactory(), credential);
+		MessageEndpoint messageEndpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+		return messageEndpoint;
+	}
+
+
+	/**
+	 * Retrieves an authenticated DeviceInfoEndpoint object.
+	 * Should only be called after the user has been authenticated.
+	 */
+	public static Deviceinfoendpoint getAuthDeviceInfoEndpoint(Context context) {
+		// Get saved account name
+		SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
+		String accountName = sharedPrefs.getString(Constants.SHARED_PREFERENCES_ACCOUNT_NAME_KEY, null);
+
+		// Retrieve credentials
+		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context, Constants.CREDENTIAL_AUDIENCE);
+		credential.setSelectedAccountName(accountName);
+
+		// Create the message endpoint object with credentials
+		Deviceinfoendpoint.Builder endpointBuilder = new Deviceinfoendpoint.Builder(
+				AndroidHttp.newCompatibleTransport(), new JacksonFactory(), credential);
+		Deviceinfoendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
+		return endpoint;
 	}
 	
 

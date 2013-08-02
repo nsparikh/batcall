@@ -6,7 +6,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -22,6 +21,7 @@ public class MainActivity extends Activity {
 	private ProgressDialog pDialog;
 	private Button retryButton;
 
+	// TODO change layout / appearance to look like more of a launch screen
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -110,14 +110,12 @@ public class MainActivity extends Activity {
 
 			if (intent.getBooleanExtra(Constants.REGISTER_INTENT_SUCCESS_KEY, false)) {
 				// If registration was successful, start NearbyPlacesActivity
-				Log.i(MainActivity.class.getName(), "Registration successful, starting NearbyPlacesActivity");
 				Intent nearbyPlacesIntent = new Intent(this, NearbyPlacesActivity.class);
 				startActivity(nearbyPlacesIntent);
 				finish();
 			} else {
 				// Otherwise, prompt the user to retry
-				Toast.makeText(MainActivity.this, "Registration unsuccessful. Retry?", 
-						Toast.LENGTH_LONG).show();
+				Toast.makeText(MainActivity.this, "Registration unsuccessful. Retry?", Toast.LENGTH_LONG).show();
 				retryButton.setVisibility(View.VISIBLE);
 			}
 		}

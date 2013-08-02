@@ -1,22 +1,28 @@
 package com.neenaparikh.locationsender;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.Query;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.response.CollectionResponse;
-import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
-import com.google.appengine.datanucleus.query.JPACursorHelper;
 
 @Api(
 	name = "deviceinfoendpoint", 
@@ -31,53 +37,7 @@ import com.google.appengine.datanucleus.query.JPACursorHelper;
 )
 public class DeviceInfoEndpoint {
 
-	/**
-	 * This method lists all the entities inserted in datastore.
-	 * It uses HTTP GET method and paging support.
-	 *
-	 * @return A CollectionResponse class containing the list of all entities
-	 * persisted and a cursor to the next page.
-	 */
-	@SuppressWarnings({ "unchecked", "unused" })
-	@ApiMethod(name = "listDeviceInfo")
-	public CollectionResponse<DeviceInfo> listDeviceInfo(
-			@Nullable @Named("cursor") String cursorString,
-			@Nullable @Named("limit") Integer limit) {
-
-		EntityManager mgr = null;
-		Cursor cursor = null;
-		List<DeviceInfo> execute = null;
-
-		try {
-			mgr = getEntityManager();
-			Query query = mgr
-					.createQuery("select from DeviceInfo as DeviceInfo");
-			if (cursorString != null && cursorString != "") {
-				cursor = Cursor.fromWebSafeString(cursorString);
-				query.setHint(JPACursorHelper.CURSOR_HINT, cursor);
-			}
-
-			if (limit != null) {
-				query.setFirstResult(0);
-				query.setMaxResults(limit);
-			}
-
-			execute = (List<DeviceInfo>) query.getResultList();
-			cursor = JPACursorHelper.getCursor(execute);
-			if (cursor != null)
-				cursorString = cursor.toWebSafeString();
-
-			// Tight loop for fetching all entities from datastore and accomodate
-			// for lazy fetch.
-			for (DeviceInfo obj : execute)
-				;
-		} finally {
-			mgr.close();
-		}
-
-		return CollectionResponse.<DeviceInfo> builder().setItems(execute)
-				.setNextPageToken(cursorString).build();
-	}
+	
 
 	/**
 	 * This method gets the entity having primary key id. It uses HTTP GET method.
@@ -96,60 +56,86 @@ public class DeviceInfoEndpoint {
 		}
 		return deviceinfo;
 	}
-
+	
 	/**
-	 * Finds the device with the given phone number.
-	 * @param phone The given phone number
-	 * @return The DeviceInfo object associated with the phone number, or null if there are none.
+	 * Finds the devices with the given phone numbers.
+	 * @param phones The given phone numbers in a single string, separated by commas
+	 * @return DeviceInfo objects associated with the phone number, or null if there are none.
+	 * 	These DeviceInfo objects do not contain all information from the datastore, but rather
+	 * 	just their keys and associated phone numbers because that is all the information we need.
 	 */
-	@SuppressWarnings({ "unchecked", "unused" })
-	@ApiMethod(name = "findDeviceByPhone")
-	public DeviceInfo findDeviceByPhone(@Named("phone") String phone) {
-		EntityManager mgr = getEntityManager();
-		List<DeviceInfo> resultList = null;
-
+	@ApiMethod(name = "findDevicesByPhoneList")
+	public CollectionResponse<DeviceInfo> findDevicesByPhoneList(@Named("phoneListString") String phoneListString) {
+		if (phoneListString == null || phoneListString.length() == 0) return null;
+		
+		String[] phones = phoneListString.split(",");
+		
+		List<DeviceInfo> resultList = new ArrayList<DeviceInfo>();
+		EntityManager  mgr = getEntityManager();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		try {
-			Query query = mgr.createQuery("select from DeviceInfo as DeviceInfo where phoneNumber = '" + phone + "'");
-
-			resultList = (List<DeviceInfo>) query.getResultList();
-
-			// Tight loop for fetching all entities from datastore and accomodate
-			// for lazy fetch.
-			for (DeviceInfo obj : resultList)
-				;
+			// Iterate through each phone number and query the datastore individually
+			for (String phone : phones) {
+				
+				// Create filter on phone number and prepare query 
+				Filter phoneFilter = new FilterPredicate("phoneNumber", FilterOperator.EQUAL, phone);
+				PreparedQuery preparedQuery = datastore.prepare(new Query("DeviceInfo").setFilter(phoneFilter).setKeysOnly());
+				Entity result = preparedQuery.asSingleEntity();
+				if (result != null) {
+					// If we've found a match, create a filler DeviceInfo object to hold the ID and phone number
+					DeviceInfo matchedPhoneDevice = new DeviceInfo();
+					matchedPhoneDevice.setPhoneNumber(phone);
+					matchedPhoneDevice.setDeviceRegistrationID(result.getKey().getName());
+					resultList.add(matchedPhoneDevice);
+				}
+			}
 		} finally {
 			mgr.close();
 		}
+		
 
-		if (resultList == null || resultList.size() == 0) return null;
-		return resultList.get(0);
+		if (resultList.size() == 0) return null;
+		return CollectionResponse.<DeviceInfo> builder().setItems(resultList).build();
 	}
 	
 	/**
-	 * Finds the devices associated with the given email address.
-	 * @param email The given email address
-	 * @return A list of DeviceInfo objects with the given email address, or null if there are none.
+	 * Finds the devices with the given email addresses.
+	 * @param emailListString The given email addresses in a single string, separated by commas
+	 * @return The DeviceInfo objects associated with the phone number, or null if there are none.
+	 * 	These DeviceInfo objects do not contain all information from the datastore, but rather
+	 * 	just their keys and associated email addresses because that is all the information we need.
 	 */
-	@SuppressWarnings({ "unchecked", "unused" })
-	@ApiMethod(name = "findDevicesByEmail")
-	public CollectionResponse<DeviceInfo> findDevicesByEmail(@Named("email") String email) {
-		EntityManager mgr = getEntityManager();
-		List<DeviceInfo> resultList = null;
-
+	@ApiMethod(name = "findDevicesByEmailList")
+	public CollectionResponse<DeviceInfo> findDevicesByEmailList(@Named("emailListString") String emailListString) {
+		if (emailListString == null || emailListString.length() == 0) return null;
+		
+		String[] emails = emailListString.split(",");
+		
+		List<DeviceInfo> resultList = new ArrayList<DeviceInfo>();
+		EntityManager  mgr = getEntityManager();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		try {
-			Query query = mgr.createQuery("select from DeviceInfo as DeviceInfo where userEmail = '" + email + "'");
-
-			resultList = (List<DeviceInfo>) query.getResultList();
-
-			// Tight loop for fetching all entities from datastore and accomodate
-			// for lazy fetch.
-			for (DeviceInfo obj : resultList)
-				;
+			// Iterate through each email address and query the datastore individually
+			for (String email : emails) {
+				// Create filter on email address and prepare query 
+				Filter phoneFilter = new FilterPredicate("userEmail", FilterOperator.EQUAL, email);
+				PreparedQuery preparedQuery = datastore.prepare(new Query("DeviceInfo").setFilter(phoneFilter).setKeysOnly());
+				List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withLimit(5));
+				if (result != null && result.size() > 0) {
+					for (Entity e : result) {
+						// If we've found a match, create a filler DeviceInfo object to hold the ID and email
+						DeviceInfo matchedEmailDevice = new DeviceInfo();
+						matchedEmailDevice.setUserEmail(email);
+						matchedEmailDevice.setDeviceRegistrationID(e.getKey().getName());
+						resultList.add(matchedEmailDevice);
+					}
+				}
+			}
 		} finally {
 			mgr.close();
 		}
 
-		if (resultList == null || resultList.size() == 0) return null;
+		if (resultList.size() == 0) return null;
 		return CollectionResponse.<DeviceInfo> builder().setItems(resultList).build();
 	}
 	
@@ -174,7 +160,7 @@ public class DeviceInfoEndpoint {
 			}
 			
 			deviceinfo.setUserName(user.getNickname());
-			deviceinfo.setUserEmail(user.getEmail());
+			deviceinfo.setUserEmail(user.getEmail().toLowerCase());
 			deviceinfo.setUserAuthDomain(user.getAuthDomain());
 			deviceinfo.setUserFederatedIdentity(user.getFederatedIdentity());
 			deviceinfo.setUserId(user.getUserId());

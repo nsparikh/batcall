@@ -1,8 +1,18 @@
 package com.neenaparikh.locationsender.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Log;
+
+import com.neenaparikh.locationsender.util.Constants;
+import com.neenaparikh.locationsender.util.HelperMethods;
 
 /**
  * Represents a user of the application. (Not called "User" in order to avoid
@@ -11,23 +21,55 @@ import android.net.Uri;
  * @author neenaparikh
  *
  */
-public class Person implements Comparable<Person> {
+public class Person implements Comparable<Person>, Parcelable {
 	private String name;
 	private ArrayList<String> emails;
-	private String registeredEmail; // The email address this person has used to register with the app
 	private ArrayList<String> phones;
-	private String registeredPhone; // The phone number this person has used to register with the app
-	private boolean isRegistered; // Tells whether this Person is registered with the app
 	private Uri photoUri;
+	private long lastContacted; // Denotes the timestamp of when this Person was last contacted using the app
+	private ArrayList<String> deviceRegistrationIdList; // The person's associated GCM registration IDs
 	
 	public Person() {
 		this.name = "";
 		this.emails = new ArrayList<String>();
-		this.registeredEmail = "";
 		this.phones = new ArrayList<String>();
-		this.registeredPhone = "";
 		this.photoUri = Uri.EMPTY;
-		this.isRegistered = false;
+		this.deviceRegistrationIdList = new ArrayList<String>();
+		this.lastContacted = Long.valueOf(0);
+	}
+	
+	/**
+	 * @return A Person object created from a JSON string
+	 */
+	public static Person personFromJsonString(String jsonString) {
+		if (jsonString == null || jsonString.length() == 0) return null;
+		
+		try {
+			Person person = new Person();
+			JSONObject jsonObject = new JSONObject(jsonString);
+			person.setName(jsonObject.getString(Constants.PERSON_NAME_KEY));
+			
+			String emailsString = jsonObject.getString(Constants.PERSON_EMAILS_KEY);
+			if (emailsString != null && emailsString.length() > 0) 
+				person.setEmails(new ArrayList<String>(Arrays.asList(emailsString.split(" "))));
+			
+			String phonesString = jsonObject.getString(Constants.PERSON_PHONES_KEY);
+			if (phonesString != null && phonesString.length() > 0)
+				person.setPhones(new ArrayList<String>(Arrays.asList(phonesString.split(" "))));
+			
+			person.setPhotoUri(Uri.parse(jsonObject.getString(Constants.PERSON_PHOTO_URI_KEY)));
+			
+			String deviceIdString = jsonObject.getString(Constants.PERSON_DEVICE_ID_LIST_KEY);
+			if (deviceIdString != null && deviceIdString.length() > 0)
+				person.setDeviceRegistrationIdList(new ArrayList<String>(Arrays.asList(deviceIdString.split(" "))));
+			
+			person.setLastContacted(Long.valueOf(jsonObject.getString(Constants.PERSON_LAST_CONTACTED_KEY)));
+			
+			return person;
+		} catch (JSONException e) {
+			Log.e(Person.class.getName(), "JSONException in personFromJsonString: " + e.getMessage());
+			return null;
+		}
 	}
 
 	public String getName() {
@@ -45,14 +87,7 @@ public class Person implements Comparable<Person> {
 
 	public void setEmails(ArrayList<String> emails) {
 		this.emails = emails;
-	}
-
-	public String getRegisteredEmail() {
-		return registeredEmail;
-	}
-
-	public void setRegisteredEmail(String registeredEmail) {
-		this.registeredEmail = registeredEmail;
+		if (emails == null) this.emails = new ArrayList<String>();
 	}
 
 	public ArrayList<String> getPhones() {
@@ -61,22 +96,7 @@ public class Person implements Comparable<Person> {
 
 	public void setPhones(ArrayList<String> phones) {
 		this.phones = phones;
-	}
-
-	public String getRegisteredPhone() {
-		return registeredPhone;
-	}
-
-	public void setRegisteredPhone(String registeredPhone) {
-		this.registeredPhone = registeredPhone;
-	}
-
-	public boolean isRegistered() {
-		return isRegistered;
-	}
-
-	public void setRegistered(boolean isRegistered) {
-		this.isRegistered = isRegistered;
+		if (phones == null) this.phones = new ArrayList<String>();
 	}
 
 	public Uri getPhotoUri() {
@@ -85,14 +105,140 @@ public class Person implements Comparable<Person> {
 
 	public void setPhotoUri(Uri photoUri) {
 		this.photoUri = photoUri;
+		if (photoUri == null) this.photoUri = Uri.EMPTY;
+	}
+
+	public ArrayList<String> getDeviceRegistrationIdList() {
+		return deviceRegistrationIdList;
+	}
+
+	public void addDeviceRegistrationId(String deviceRegistrationId) {
+		getDeviceRegistrationIdList().add(deviceRegistrationId);
+	}
+	
+	public void setDeviceRegistrationIdList(ArrayList<String> deviceRegistrationIdList) {
+		this.deviceRegistrationIdList = deviceRegistrationIdList;
+		if (deviceRegistrationIdList == null) this.deviceRegistrationIdList = new ArrayList<String>();
+	}
+	
+	public long getLastContacted() {
+		return lastContacted;
+	}
+
+	public void setLastContacted(long lastContacted) {
+		this.lastContacted = lastContacted;
+	}
+	
+	public boolean isRegistered() {
+		return (getDeviceRegistrationIdList().size() > 0);
+	}
+	
+	public boolean hasPhones() {
+		return (getPhones() != null && getPhones().size() > 0);
 	}
 	
 	public String toString() {
 		return this.name;
+	}
+	
+	public String toStringVerbose() {
+		String emailsString = "";
+		for (String e : getEmails()) emailsString += e + " ";
+		
+		String phonesString = "";
+		for (String p : getPhones()) phonesString += p + " ";
+		
+		return "Name: " + getName() + 
+				"\nEmails: " + emailsString + 
+				"\nPhones: " + phonesString + 
+				"\nRegistered Devices: " + HelperMethods.stringListToString(getDeviceRegistrationIdList());
+	}
+	
+	/**
+	 * @return A representation of this Person object in the form of a JSON string
+	 */
+	public String toJsonString() {
+		JSONObject jsonObject = new JSONObject();
+		
+		try {
+			jsonObject.putOpt(Constants.PERSON_NAME_KEY, getName());
+			
+			String emailString = "";
+			for (String email : getEmails()) emailString += email + " ";
+			jsonObject.putOpt(Constants.PERSON_EMAILS_KEY, emailString);
+			
+			String phoneString = "";
+			for (String phone : getPhones()) phoneString += phone + " ";
+			jsonObject.putOpt(Constants.PERSON_PHONES_KEY, phoneString);
+			
+			jsonObject.putOpt(Constants.PERSON_PHOTO_URI_KEY, getPhotoUri().toString());
+			
+			String deviceIdString = "";
+			for (String deviceId : getDeviceRegistrationIdList()) deviceIdString += deviceId + " ";
+			jsonObject.putOpt(Constants.PERSON_DEVICE_ID_LIST_KEY, deviceIdString);
+			
+			jsonObject.putOpt(Constants.PERSON_LAST_CONTACTED_KEY, getLastContacted());
+			
+		} catch (JSONException e) {
+			Log.e(Person.class.getName(), "JSONException in toJsonString: " + e.getMessage());
+		}
+		
+		return jsonObject.toString();
 	}
 
 	@Override
 	public int compareTo(Person another) {
 		return this.getName().compareToIgnoreCase(another.getName());
 	}
+	
+	
+	
+	
+	/* Following methods are for parceling */
+	
+	/**
+	 * Writes object data to parcel
+	 */
+	public void writeToParcel(Parcel out, int flags) {
+		out.writeString(getName());
+		out.writeStringList(getEmails());
+		out.writeStringList(getPhones());
+		out.writeString(getPhotoUri().toString());
+    }
+
+	/**
+	 * Creator to create new Person object from parcel
+	 */
+    public static final Parcelable.Creator<Person> CREATOR = new Parcelable.Creator<Person>() {
+        public Person createFromParcel(Parcel in) {
+            return new Person(in);
+        }
+
+        public Person[] newArray(int size) {
+            return new Person[size];
+        }
+    };
+    
+    /**
+     * Private method to create new Person object from parcel data
+     * @param in
+     */
+    private Person(Parcel in) {
+    	setName(in.readString());
+    	
+    	ArrayList<String> emails = new ArrayList<String>();
+    	in.readStringList(emails);
+    	
+    	ArrayList<String> phones = new ArrayList<String>();
+    	in.readStringList(phones);
+    	
+    	setPhotoUri(Uri.parse(in.readString()));
+    }
+
+	@Override
+	public int describeContents() {
+		return 0;
+		
+	}
+
 }

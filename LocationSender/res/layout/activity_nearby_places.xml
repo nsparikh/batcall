@@ -8,6 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="8dp"
+        android:background="@drawable/blue_bottom_border_selector"
         android:textSize="18sp" />
     
     <ListView android:id="@+id/nearby_list_view"

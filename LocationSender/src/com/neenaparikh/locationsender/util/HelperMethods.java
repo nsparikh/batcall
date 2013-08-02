@@ -1,76 +1,80 @@
 package com.neenaparikh.locationsender.util;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.telephony.PhoneNumberUtils;
+import java.util.Calendar;
+import java.util.List;
 
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.json.jackson.JacksonFactory;
-import com.neenaparikh.locationsender.CloudEndpointUtils;
-import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
-import com.neenaparikh.locationsender.messageEndpoint.MessageEndpoint;
+import android.telephony.PhoneNumberUtils;
 
 public class HelperMethods {
 
 	/**
 	 * Helper method to format the dialog message given the recipients and duration.
-	 * @param recipients The selected recipients of the notification
+	 * @param recipientNames The selected recipients of the notification
 	 * @param duration The duration for which to send the notification
 	 * @return A sensical dialog message to display
 	 */
-	public static String formatMessage(String[] recipientNames, int duration) {
+	public static String formatMessage(List<String> recipientNames, int duration) {
 		String message = "Send notification to ";
 
 		// Add recipient names
-		int numRecipients = recipientNames.length;
+		int numRecipients = recipientNames.size();
 		if (numRecipients == 1) {
-			message += recipientNames[0];
+			message += recipientNames.get(0);
 		} else if (numRecipients == 2) {
-			message += recipientNames[0] + " and " + recipientNames[1];
+			message += recipientNames.get(0) + " and " + recipientNames.get(0);
 		} else {
 			for (int i = 0; i < numRecipients - 1; i++) {
-				message += recipientNames[i] + ", ";
+				message += recipientNames.get(i) + ", ";
 			}
-			message += "and " + recipientNames[recipientNames.length - 1];
+			message += "and " + recipientNames.get(recipientNames.size() - 1);
 		}
-
-		// Add duration
-		message += " for " + minutesToDurationText(duration);
 
 		message += "?";
 		return message;
 	}
 
 	/**
-	 * Takes in a duration (in minutes) and returns a formatted text representation.
-	 * For example, 100 minutes becomes "1 hour, 40 minutes"
-	 * @param duration The duration in minutes
-	 * @return A formatted text representation of the duration
+	 * Helper method to format a list of names.
+	 * @param names The list of names
 	 */
-	public static String minutesToDurationText(int duration) {
-		int hours = duration / 60;
-		int minutes = duration % 60;
-
-		if (hours == 0) {
-			if (minutes == 1) return "1 minute";
-			else return minutes + " minutes";
-		} else if (minutes == 0) {
-			if (hours == 1) return "1 hour";
-			else return hours + " hours";
-		} else {
-			String hourString;
-			if (hours == 1) hourString = "1 hour";
-			else hourString = hours + " hours";
-
-			String minuteString;
-			if (minutes == 1) minuteString = "1 hour";
-			else minuteString = minutes + " minutes";
-
-			return hourString + ", " + minuteString;
+	public static String formatNames(List<String> names) {
+		if (names == null || names.size() == 0) return "";
+		
+		String namesListString = names.get(0);
+		
+		for (int i = 1; i < names.size(); i++) {
+			namesListString += ", " + names.get(i);
 		}
+		return namesListString;
 	}
 	
+	/**
+	 * Takes in a list of strings and returns a comma-separated single string.
+	 */
+	public static String stringListToString(List<String> stringList) {
+		String str = "";
+		for (String element : stringList) str += element + ",";
+		return str;
+	}
+	
+	/**
+	 * Takes in a duration in minutes and a start timestamp and returns
+	 * the formatted time that is timestamp + duration
+	 */
+	public static String getTimeAfterStart(long startTime, int duration) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(startTime);
+		calendar.add(Calendar.MINUTE, duration);
+		
+		int minute = calendar.get(Calendar.MINUTE);
+		String minuteString = "";
+		if (minute < 10) minuteString = "0" + minute;
+		else minuteString = "" + minute;
+		String timeString = calendar.get(Calendar.HOUR) + ":" + minuteString + " " + calendar.get(Calendar.AM_PM);
+		// TODO: Calendar.AM_PM returns an int?
+		return timeString;
+	}
+
 	/**
 	 * "Flattens" a phone number into a standard format by eliminating all symbols, etc.
 	 */
@@ -81,46 +85,5 @@ public class HelperMethods {
 		return flattened;
 	}
 
-	/**
-	 * Retrieves an authenticated MessageEndpoint object.
-	 * Should only be called after the user has been authenticated.
-	 * TODO: move this to a more appropriate location
-	 */
-	public static MessageEndpoint getMessageEndpoint(Context context) {
-		// Get saved account name
-		SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
-		String accountName = sharedPrefs.getString(Constants.SHARED_PREFERENCES_ACCOUNT_NAME_KEY, null);
-		
-		// Retrieve credentials
-		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context, Constants.CREDENTIAL_AUDIENCE);
-		credential.setSelectedAccountName(accountName);
-		
-		// Create the message endpoint object with credentials
-		MessageEndpoint.Builder endpointBuilder = new MessageEndpoint.Builder(
-				AndroidHttp.newCompatibleTransport(), new JacksonFactory(), credential);
-		MessageEndpoint messageEndpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
-		return messageEndpoint;
-	}
-	
 
-	/**
-	 * Retrieves an authenticated DeviceInfoEndpoint object.
-	 * Should only be called after the user has been authenticated.
-	 * TODO: move this to a more appropriate location
-	 */
-	public static Deviceinfoendpoint getDeviceInfoEndpoint(Context context) {
-		// Get saved account name
-		SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
-		String accountName = sharedPrefs.getString(Constants.SHARED_PREFERENCES_ACCOUNT_NAME_KEY, null);
-		
-		// Retrieve credentials
-		GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context, Constants.CREDENTIAL_AUDIENCE);
-		credential.setSelectedAccountName(accountName);
-		
-		// Create the message endpoint object with credentials
-		Deviceinfoendpoint.Builder endpointBuilder = new Deviceinfoendpoint.Builder(
-				AndroidHttp.newCompatibleTransport(), new JacksonFactory(), credential);
-		Deviceinfoendpoint endpoint = CloudEndpointUtils.updateBuilder(endpointBuilder).build();
-		return endpoint;
-	}
 }

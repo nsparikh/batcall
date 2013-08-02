@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/ldoxR6g2hr4rd243Lc5E8j_qU2M\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/kljUAQ7jLsrescL9H35Oq3khL5g\"",
  "discoveryVersion": "v1",
  "id": "messageEndpoint:v1",
  "name": "messageEndpoint",
@@ -77,6 +77,10 @@
   "messageEndpoint.sendMessage": {
    "id": "messageEndpoint.sendMessage",
    "parameters": {
+    "deviceRegistrationId": {
+     "type": "string",
+     "required": true
+    },
     "duration": {
      "type": "integer",
      "required": true,
@@ -95,14 +99,6 @@
     "placeName": {
      "type": "string",
      "required": true
-    },
-    "recipientEmail": {
-     "type": "string",
-     "required": true
-    },
-    "recipientPhone": {
-     "type": "string",
-     "required": true
     }
    },
    "parameterOrder": [
@@ -110,8 +106,7 @@
     "latitude",
     "longitude",
     "duration",
-    "recipientPhone",
-    "recipientEmail"
+    "deviceRegistrationId"
    ],
    "returns": {
     "$ref": "BooleanResult"

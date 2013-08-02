@@ -3,7 +3,6 @@ package com.neenaparikh.locationsender.comms;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -26,6 +25,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.neenaparikh.locationsender.DurationSelectorDialog;
+import com.neenaparikh.locationsender.NearbyPlacesActivity;
 import com.neenaparikh.locationsender.R;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.model.PlaceList;
@@ -41,7 +41,8 @@ import com.neenaparikh.locationsender.util.Constants;
 public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>> {
 	private static final String TAG = "LoadPlacesTask";
 	
-	private Activity mActivity;
+	private NearbyPlacesActivity mActivity;
+	private boolean showDialog;
 	private ProgressDialog pDialog;
 
 	private String currentAddress;
@@ -49,9 +50,10 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 	
 	private HttpTransport httpTransport;
 
-	public LoadPlacesTask(Activity activity) {
-		mActivity = activity;
-		httpTransport = new NetHttpTransport();
+	public LoadPlacesTask(NearbyPlacesActivity activity, boolean showDialog) {
+		this.mActivity = activity;
+		this.showDialog = showDialog;
+		this.httpTransport = new NetHttpTransport();
 	}
 
 	/**
@@ -60,11 +62,11 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-
+		
 		pDialog = new ProgressDialog(mActivity);
 		pDialog.setMessage("Updating location...");
 		pDialog.setCancelable(false);
-		pDialog.show();
+		if (showDialog) pDialog.show();
 	}
 
 	/**
@@ -84,10 +86,8 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 	@Override
 	protected void onPostExecute(final ArrayList<Place> resultList) {
 		// Dismiss the dialog if it's showing
-		if (pDialog.isShowing()) {
-			pDialog.dismiss();
-		}
-
+		if (pDialog.isShowing()) pDialog.dismiss();
+		
 		// Update the UI thread
 		mActivity.runOnUiThread(new Runnable() {
 			public void run() {
@@ -105,6 +105,9 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 							Place currentPlace = new Place("", currentAddress, currentAddress, "", currentLocation);
 							DurationSelectorDialog dialog = DurationSelectorDialog.getInstance(currentPlace);
 							dialog.show(mActivity.getFragmentManager(), "DurationSelectorDialog");
+							
+							// Don't need to keep updating the location once the user chooses a place
+							mActivity.removeLocationUpdates();
 						}
 						
 					});
@@ -124,12 +127,8 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 						Place selectedPlace = (Place) nearbyListView.getAdapter().getItem(position);
 						DurationSelectorDialog dialog = DurationSelectorDialog.getInstance(selectedPlace);
 						dialog.show(mActivity.getFragmentManager(), "DurationSelectorDialog");
-						
-						
 					}
-					
 				});
-
 			}
 		});
 	}
@@ -208,7 +207,6 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 		} catch (IOException e) {
 			Log.e(TAG, "IOException: " + e.getMessage());
 		}
-
 
 		return "";
 	}

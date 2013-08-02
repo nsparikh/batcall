@@ -28,7 +28,7 @@
   "packagePath" : "locationsender",
   "methods" : {
     "messageEndpoint.sendMessage" : {
-      "path" : "sendMessage/{placeName}/{latitude}/{longitude}/{duration}/{recipientPhone}/{recipientEmail}",
+      "path" : "sendMessage/{placeName}/{latitude}/{longitude}/{duration}/{deviceRegistrationId}",
       "httpMethod" : "POST",
       "scopes" : [ ],
       "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
@@ -52,11 +52,7 @@
             "type" : "int32",
             "required" : true
           },
-          "recipientPhone" : {
-            "type" : "string",
-            "required" : true
-          },
-          "recipientEmail" : {
+          "deviceRegistrationId" : {
             "type" : "string",
             "required" : true
           }

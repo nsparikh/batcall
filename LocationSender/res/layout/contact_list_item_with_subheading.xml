@@ -13,15 +13,30 @@
         android:contentDescription="@string/default_image_description"
         android:src="@drawable/emo_1" />
 
-    <TextView
-        android:id="@+id/contact_list_item_name"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@id/contact_list_item_image"
-        android:text="@string/default_contact_list_item_name"
-        android:textColor="?android:textColorPrimary"
-        android:textSize="18sp" />
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/contact_list_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="18sp"
+            android:text="@string/default_contact_list_item_name" />
+        
+        <TextView android:id="@+id/contact_list_item_subheading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:text="@string/default_contact_list_item_subheading" />
+        
+    </LinearLayout>
 
     <CheckBox
         android:id="@+id/contact_list_item_checkbox"

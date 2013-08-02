@@ -27,6 +27,26 @@
   "ownerName" : "neenaparikh.com",
   "packagePath" : "locationsender",
   "methods" : {
+    "deviceinfoendpoint.findDevicesByEmailList" : {
+      "path" : "findDevicesByEmailList/{emailListString}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
+      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByEmailList",
+      "request" : {
+        "parameters" : {
+          "emailListString" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
     "deviceinfoendpoint.insertDeviceInfo" : {
       "path" : "deviceinfo",
       "httpMethod" : "POST",
@@ -62,16 +82,16 @@
         "body" : "autoTemplate(backendResponse)"
       }
     },
-    "deviceinfoendpoint.findDeviceByPhone" : {
-      "path" : "findDeviceByPhone/{phone}",
+    "deviceinfoendpoint.findDevicesByPhoneList" : {
+      "path" : "findDevicesByPhoneList/{phoneListString}",
       "httpMethod" : "POST",
       "scopes" : [ ],
       "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
       "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByPhone",
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByPhoneList",
       "request" : {
         "parameters" : {
-          "phone" : {
+          "phoneListString" : {
             "type" : "string",
             "required" : true
           }
@@ -82,21 +102,16 @@
         "body" : "autoTemplate(backendResponse)"
       }
     },
-    "deviceinfoendpoint.findDevicesByEmail" : {
-      "path" : "findDevicesByEmail/{email}",
-      "httpMethod" : "POST",
+    "deviceinfoendpoint.updateDeviceInfo" : {
+      "path" : "deviceinfo",
+      "httpMethod" : "PUT",
       "scopes" : [ ],
       "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
       "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByEmail",
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo",
       "request" : {
-        "parameters" : {
-          "email" : {
-            "type" : "string",
-            "required" : true
-          }
-        },
-        "body" : "empty"
+        "body" : "autoTemplate(backendRequest)",
+        "bodyName" : "resource"
       },
       "response" : {
         "body" : "autoTemplate(backendResponse)"
@@ -121,49 +136,25 @@
       "response" : {
         "body" : "empty"
       }
-    },
-    "deviceinfoendpoint.updateDeviceInfo" : {
-      "path" : "deviceinfo",
-      "httpMethod" : "PUT",
-      "scopes" : [ ],
-      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
-      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo",
-      "request" : {
-        "body" : "autoTemplate(backendRequest)",
-        "bodyName" : "resource"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
-    },
-    "deviceinfoendpoint.listDeviceInfo" : {
-      "path" : "deviceinfo",
-      "httpMethod" : "GET",
-      "scopes" : [ ],
-      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
-      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.listDeviceInfo",
-      "request" : {
-        "parameters" : {
-          "cursor" : {
-            "type" : "string",
-            "required" : false
-          },
-          "limit" : {
-            "type" : "int32",
-            "required" : false
-          }
-        },
-        "body" : "empty"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
     }
   },
   "descriptor" : {
     "schemas" : {
+      "CollectionResponse_DeviceInfo" : {
+        "id" : "CollectionResponse_DeviceInfo",
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "DeviceInfo"
+            }
+          },
+          "nextPageToken" : {
+            "type" : "string"
+          }
+        }
+      },
       "DeviceInfo" : {
         "id" : "DeviceInfo",
         "type" : "object",
@@ -197,24 +188,14 @@
             "type" : "string"
           }
         }
-      },
-      "CollectionResponse_DeviceInfo" : {
-        "id" : "CollectionResponse_DeviceInfo",
-        "type" : "object",
-        "properties" : {
-          "items" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "DeviceInfo"
-            }
-          },
-          "nextPageToken" : {
-            "type" : "string"
-          }
-        }
       }
     },
     "methods" : {
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByEmailList" : {
+        "response" : {
+          "$ref" : "CollectionResponse_DeviceInfo"
+        }
+      },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.insertDeviceInfo" : {
         "request" : {
           "$ref" : "DeviceInfo"
@@ -228,17 +209,10 @@
           "$ref" : "DeviceInfo"
         }
       },
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByPhone" : {
-        "response" : {
-          "$ref" : "DeviceInfo"
-        }
-      },
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByEmail" : {
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByPhoneList" : {
         "response" : {
           "$ref" : "CollectionResponse_DeviceInfo"
         }
-      },
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.removeDeviceInfo" : {
       },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo" : {
         "request" : {
@@ -248,10 +222,7 @@
           "$ref" : "DeviceInfo"
         }
       },
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.listDeviceInfo" : {
-        "response" : {
-          "$ref" : "CollectionResponse_DeviceInfo"
-        }
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.removeDeviceInfo" : {
       }
     }
   }

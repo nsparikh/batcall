@@ -7,16 +7,32 @@ public class Constants {
 	public static final String API_KEY = "AIzaSyA8YrzfpyrPzbfSY-pKLpulbWOPnQ-YAlU";
 	public static final String PROJECT_NUMBER = "655975699066";
 	
-	// Keys for SharedPreferences and Credentials
+	// Keys for SharedPreferences
 	public static final String SHARED_PREFERENCES_NAME = "LocationSender_SharedPreferences";
 	public static final String SHARED_PREFERENCES_ACCOUNT_NAME_KEY = "saved_account_name";
+	public static final String SHARED_PREFERENCES_TEXT_ENABLED_KEY = "text_message_fallback_enabled";
+	public static final String SHARED_PREFERENCES_SAVED_CONTACTS_KEY = "saved_contact_list";
+	public static final String SHARED_PREFERENCES_NUM_RECENT_CONTACTS_KEY = "number_of_recent_contacts_displayed";
+	public static final String SHARED_PREFERENCES_RECENT_CONTACTS_KEY = "recent_contacts_list";
+	
+	// Crediential info
 	public static final int REQUEST_ACCOUNT_PICKER = 2;
 	public static final String CREDENTIAL_AUDIENCE = "server:client_id:655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com";
-	
 	
 	// Key for passing registration messages from GCMIntentService to Activities
 	public static final String GCM_INTENT_SERVICE_KEY = "GCM_intent_service";
 	public static final String REGISTER_INTENT_SUCCESS_KEY = "is_successful";
+	
+	// Key to store boolean value in an intent denoting whether it was launched from a refresh action
+	public static final String INTENT_REFRESH_KEY = "intent_refresh";
+	
+	// Keys for Person object fields
+	public static final String PERSON_NAME_KEY = "personName";
+	public static final String PERSON_EMAILS_KEY = "personEmails";
+	public static final String PERSON_PHONES_KEY = "personPhones";
+	public static final String PERSON_PHOTO_URI_KEY = "personPhotoUri";
+	public static final String PERSON_DEVICE_ID_LIST_KEY = "personDeviceRegistrationIdList";
+	public static final String PERSON_LAST_CONTACTED_KEY = "personLastContacted";
 	
 	// Keys for accessing message object info
 	public static final String MESSAGE_PLACE_NAME_KEY = "placeName";

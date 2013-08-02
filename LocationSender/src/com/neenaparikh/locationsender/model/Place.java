@@ -24,12 +24,12 @@ public class Place implements Parcelable {
 	@Key("formatted_address")
 	private String address;
 	
-	// TODO: what is this?
+	// Place reference (from Google Places API)
 	@Key("reference")
 	private String reference;
 	
 	/*
-	 * This structure is a result of the Google Place API.
+	 * This structure is a result of the Google Places API.
 	 * The location coordinates are nested within a "geometry" attribute.
 	 */
 	@Key("geometry")
