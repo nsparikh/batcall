@@ -26,8 +26,8 @@ public class Person implements Comparable<Person>, Parcelable {
 	private ArrayList<String> emails;
 	private ArrayList<String> phones;
 	private Uri photoUri;
-	private long lastContacted; // Denotes the timestamp of when this Person was last contacted using the app
 	private ArrayList<String> deviceRegistrationIdList; // The person's associated GCM registration IDs
+	private long lastContacted; // Denotes the timestamp of when this Person was last contacted using the app
 	
 	public Person() {
 		this.name = "";
@@ -151,7 +151,8 @@ public class Person implements Comparable<Person>, Parcelable {
 		return "Name: " + getName() + 
 				"\nEmails: " + emailsString + 
 				"\nPhones: " + phonesString + 
-				"\nRegistered Devices: " + HelperMethods.stringListToString(getDeviceRegistrationIdList());
+				"\nRegistered Devices: " + HelperMethods.stringListToString(getDeviceRegistrationIdList()) +
+				"\nLast contacted: " + getLastContacted();
 	}
 	
 	/**

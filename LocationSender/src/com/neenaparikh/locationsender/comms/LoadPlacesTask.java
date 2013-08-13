@@ -14,6 +14,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpHeaders;
@@ -88,9 +89,15 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 		// Dismiss the dialog if it's showing
 		if (pDialog.isShowing()) pDialog.dismiss();
 		
+		
 		// Update the UI thread
 		mActivity.runOnUiThread(new Runnable() {
 			public void run() {
+				// If resultList is null, that means there was a server error
+				if (resultList == null) {
+					Toast.makeText(mActivity, "Server error. Please try again later.", Toast.LENGTH_LONG).show();
+					return;
+				}
 
 				// Display current address, if any
 				if (currentAddress != null && currentAddress.length() > 0) {

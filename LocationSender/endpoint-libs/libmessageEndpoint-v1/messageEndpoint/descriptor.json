@@ -1,22 +1,29 @@
 {
   "files": [
     {
-      "downloadUrl": "/downloads/messageEndpoint/v1/20130802051043/java/1.15.0-rc/locationsender-messageEndpoint-v1-20130802051043-java-1.15.0-rc-sources.jar", 
-      "path": "locationsender-messageEndpoint-v1-20130802051043-java-1.15.0-rc-sources.jar", 
+      "downloadUrl": "/downloads/messageEndpoint/v1/20130813005410/java/1.15.0-rc/locationsender-messageEndpoint-v1-20130813005410-java-1.15.0-rc-sources.jar", 
+      "path": "locationsender-messageEndpoint-v1-20130813005410-java-1.15.0-rc-sources.jar", 
       "type": "source", 
-      "timestamp": "2013-08-02 05:10"
+      "timestamp": "2013-08-13 00:54"
     }, 
     {
-      "path": "locationsender-messageEndpoint-v1-20130802051043-java-1.15.0-rc.jar.properties", 
+      "path": "locationsender-messageEndpoint-v1-20130813005410-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
+  "proguard-config": "proguard-google-api-client.txt", 
   "kind": "discovery#directoryItem", 
   "moduleName": "com.neenaparikh.locationsender", 
   "name": "messageEndpoint", 
   "language": "java", 
-  "proguard-config": "proguard-google-api-client.txt", 
+  "ownerDomain": "appspot.com", 
+  "maven": {
+    "group_id": "com.appspot", 
+    "artifact_id": "locationsender-messageEndpoint", 
+    "version": "v1-SNAPSHOT"
+  }, 
   "version": "v1", 
+  "ownerName": "neenaparikh.com", 
   "dependencies": [
     {
       "files": [
@@ -691,7 +698,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130802051043, 
+  "revision": 20130813005410, 
   "id": "messageEndpoint:v1", 
   "modulePath": "com/neenaparikh/locationsender"
 }

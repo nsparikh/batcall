@@ -1,13 +1,9 @@
 package com.neenaparikh.locationsender;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,8 +13,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.neenaparikh.locationsender.comms.LoadContactsTask;
-import com.neenaparikh.locationsender.model.Person;
-import com.neenaparikh.locationsender.model.PersonTimeComparator;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.Constants;
 import com.neenaparikh.locationsender.util.HelperMethods;
@@ -27,7 +21,6 @@ public class ContactsActivity extends Activity {
 	private RelativeLayout sendButtonContainer;
 	private TextView selectedPeopleNamesView;
 	private Place selectedPlace;
-	private ArrayList<Person> allRecentContacts;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,17 +31,6 @@ public class ContactsActivity extends Activity {
 		sendButtonContainer = (RelativeLayout) findViewById(R.id.activity_contacts_send_button_container);
 		selectedPeopleNamesView = (TextView) findViewById(R.id.activity_contacts_selected_person_text_view);
 		sendButtonContainer.setVisibility(View.GONE);
-		
-		// Get recent contacts, if any
-		/*SharedPreferences sharedPrefs = getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
-		Set<String> recentContactStrings = sharedPrefs.getStringSet(Constants.SHARED_PREFERENCES_RECENT_CONTACTS_KEY, new HashSet<String>());
-		ArrayList<Person> allRecentContacts = new ArrayList<Person>();
-		for (String recentContactString : recentContactStrings) 
-			allRecentContacts.add(Person.personFromJsonString(recentContactString));
-		Collections.sort(allRecentContacts, new PersonTimeComparator());
-		
-		int numRecentContacts = sharedPrefs.getInt(Constants.SHARED_PREFERENCES_NUM_RECENT_CONTACTS_KEY, 0);*/
-		// TODO: get first "numRecentContacts" people from allRecentContacts and display
 		
 		// Get selected place object from the intent
 		selectedPlace = getIntent().getParcelableExtra(Constants.SELECTED_PLACE_KEY);

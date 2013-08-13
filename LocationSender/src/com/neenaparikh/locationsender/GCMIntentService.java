@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
@@ -71,7 +72,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	@Override
 	public void onError(Context context, String errorId) {
 		Log.e(GCMIntentService.class.getName(), "GCM registration failed. Check project number?");
-		sendRegisterIntent(context, false);
+		sendRegisterIntent(context, false, null);
 	}
 
 	/**
@@ -88,12 +89,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 		 * with the DevAppServer and methods that return null in App Engine 1.7.5.
 		 */
 		boolean alreadyRegisteredWithEndpointServer = false;
+		String senderName = null;
 
 		try {
 			// Using cloud endpoints, see if the device has already been registered
 			DeviceInfo existingInfo = endpoint.getDeviceInfo(registration).execute();
 			if (existingInfo != null && registration.equals(existingInfo.getDeviceRegistrationID())) {
 				alreadyRegisteredWithEndpointServer = true;
+				senderName = existingInfo.getUserName();
 			}
 		} catch (IOException e) {
 			Log.e(GCMIntentService.class.getName(), "IOException: " + e.getMessage());
@@ -119,16 +122,17 @@ public class GCMIntentService extends GCMBaseIntentService {
 				if (phone != null) deviceInfo.setPhoneNumber(HelperMethods.flattenPhone(phone));
 						
 				endpoint.insertDeviceInfo(deviceInfo).execute();
+				senderName = endpoint.getDeviceInfo(registration).execute().getUserName();
 			}
 		} catch (IOException e) {
 			Log.e(GCMIntentService.class.getName(),
 					"Exception received when attempting to register with server at "
 							+ endpoint.getRootUrl(), e);
-			sendRegisterIntent(context, false);
+			sendRegisterIntent(context, false, senderName);
 			return;
 		}
 		Log.i(GCMIntentService.class.getName(), "Registration success!");
-		sendRegisterIntent(context, true);
+		sendRegisterIntent(context, true, senderName);
 	}
 
 	/**
@@ -145,10 +149,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 			try {
 				endpoint.removeDeviceInfo(registrationId).execute();
+				sendUnregisterIntent(context, true);
 			} catch (IOException e) {
 				Log.e(GCMIntentService.class.getName(),
 						"Exception received when attempting to unregister with server at "
 								+ endpoint.getRootUrl(), e);
+				sendUnregisterIntent(context, false);
 				return;
 			}
 		}
@@ -205,13 +211,34 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 * Sends an intent back to the activity from which this was launched.
 	 * This is how we get information from this service back to the activity.
 	 */
-	private void sendRegisterIntent(Context context, boolean isSuccessful) {
+	private void sendRegisterIntent(Context context, boolean isSuccessful, String senderName) {
 		Intent intent = new Intent(context, MainActivity.class);
 		intent.putExtra(Constants.GCM_INTENT_SERVICE_KEY, true);
 		intent.putExtra(Constants.REGISTER_INTENT_SUCCESS_KEY, isSuccessful);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		startActivity(intent);
 	}
+	
+	/**
+	 * Sends an intent upon unregistration. If successful, relaunch the application.
+	 * If unsuccessful, notify the user.
+	 */
+	private void sendUnregisterIntent(Context context, boolean isSuccessful) {
+		if (isSuccessful) {
+			// Clear all shared prefs
+			SharedPreferences sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
+			sharedPrefs.edit().clear().commit();
+			
+			// Relaunch app from the start
+			Intent intent = new Intent(context, MainActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(intent);
+			
+		} else {
+			Toast.makeText(context, "Unregistration unsuccessful. Please try again soon.", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
 	
 	/**
 	 * Retrieves an authenticated MessageEndpoint object.

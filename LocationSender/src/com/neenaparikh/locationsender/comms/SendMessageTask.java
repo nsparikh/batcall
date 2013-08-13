@@ -2,15 +2,16 @@ package com.neenaparikh.locationsender.comms;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,7 +20,6 @@ import com.neenaparikh.locationsender.NearbyPlacesActivity;
 import com.neenaparikh.locationsender.messageEndpoint.MessageEndpoint;
 import com.neenaparikh.locationsender.messageEndpoint.model.BooleanResult;
 import com.neenaparikh.locationsender.model.Person;
-import com.neenaparikh.locationsender.model.PersonTimeComparator;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.Constants;
 
@@ -33,11 +33,14 @@ import com.neenaparikh.locationsender.util.Constants;
  * @author neenaparikh
  *
  */
-public class SendMessageTask extends AsyncTask<Person, Void, List<Person>> {
+public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 	private MessageEndpoint endpoint;
+	private boolean isTextFallbackEnabled;
 	private Activity activity;
 	private Place place;
-	private ArrayList<Person> successfulRecipients;
+	private Set<String> successfulRecipientIds;
+	private TelephonyManager telephonyManager;
+    
 
 	/**
 	 * Default constructor. Takes in the Place object.
@@ -46,76 +49,83 @@ public class SendMessageTask extends AsyncTask<Person, Void, List<Person>> {
 	 */
 	public SendMessageTask(Activity activity, Place place) {
 		this.endpoint = GCMIntentService.getAuthMessageEndpoint(activity);
+		this.isTextFallbackEnabled = activity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)
+				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, false);
 		this.activity = activity;
 		this.place = place;
-		this.successfulRecipients = new ArrayList<Person>();
+		this.successfulRecipientIds = new HashSet<String>();
+		this.telephonyManager = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
 	}
 
 	/**
 	 * Sends the message. Takes in a list of Person objects.
 	 */
 	@Override
-	protected List<Person> doInBackground(Person... params) {
-		List<Person> peopleNotFound = new ArrayList<Person>();
+	protected Boolean doInBackground(Person... params) {
+		boolean success = true;
 
 		// Iterate through each person and send the message individually
+		ArrayList<Person> textMessageRecipients = new ArrayList<Person>();
 		for (Person recipient : params) {
-			System.out.println(recipient.getName());
-			ArrayList<String> recipientDeviceList = recipient.getDeviceRegistrationIdList();
-			for (String id : recipientDeviceList) System.out.println(id);
-			try {
-				// Go through each of this recipient's registered devices and send the message
-				for (String deviceId : recipient.getDeviceRegistrationIdList()) {
-					BooleanResult result = endpoint.sendMessage(place.getName(), place.getLatitude(), place.getLongitude(), 
-							place.getDuration(), deviceId).execute();
-					if (result.getResult()) successfulRecipients.add(recipient);
-					else peopleNotFound.add(recipient);
+			if (recipient.isRegistered()) {
+				try {
+					// Go through each of this recipient's registered devices and send the message
+					for (String deviceId : recipient.getDeviceRegistrationIdList()) {
+						BooleanResult result = endpoint.sendMessage(place.getName(), place.getLatitude(), place.getLongitude(), 
+								place.getDuration(), deviceId).execute();
+						if (result.getResult()) successfulRecipientIds.add(deviceId);
+						else success = false;
+					}
+				} catch (IOException e) {
+					Log.e(SendMessageTask.class.getName(), "IOException: " + e.getMessage());
+					success = false;
 				}
-			} catch (IOException e) {
-				Log.e(SendMessageTask.class.getName(), "IOException: " + e.getMessage());
-				e.printStackTrace();
-				peopleNotFound.add(recipient);
+			} else if (isTextFallbackEnabled && recipient.hasPhones()) {
+				textMessageRecipients.add(recipient);
 			}
-
 		}
+		
+		// Send text message to recipients who are unregistered, if any
+		int numTextRecipients = textMessageRecipients.size();
+		if (numTextRecipients > 0) {
+			SendTextMessageTask textTask = new SendTextMessageTask(activity, place);
+			textTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, textMessageRecipients.toArray(new Person[numTextRecipients]));
+			try {
+				textTask.get();
+			} catch (InterruptedException e) {
+				Log.e(SendMessageTask.class.getName(), "InterruptedException: " + e.getMessage());
+			} catch (ExecutionException e) {
+				Log.e(SendMessageTask.class.getName(), "ExecutionException: " + e.getMessage());
+			}
+		}
+		
 
-		return peopleNotFound;
+		return success;
 	}
 
 	/**
 	 * Called after the task finishes.
 	 */
 	@Override
-	protected void onPostExecute(List<Person> result) {
-		// TODO: make a helper method to edit shared prefs?
-		// Get recent contacts list from shared prefs
-		SharedPreferences sharedPrefs = activity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
-		Set<String> recentContactStrings = sharedPrefs.getStringSet(Constants.SHARED_PREFERENCES_SAVED_CONTACTS_KEY, new HashSet<String>());
-		ArrayList<Person> allRecentContacts = new ArrayList<Person>();
-		for (String recentContactString : recentContactStrings) 
-			allRecentContacts.add(Person.personFromJsonString(recentContactString));
-		Collections.sort(allRecentContacts, new PersonTimeComparator()); // sort by most recent first
+	protected void onPostExecute(Boolean result) {
 		
-		// Replace older contacts in list with successful recipients
-		int numSuccessfulRecipients = successfulRecipients.size();
-		for (int i = 0; i < numSuccessfulRecipients; i++) {
-			allRecentContacts.remove(allRecentContacts.size()-1); // Remove the oldest numSuccessfulRecipients objects
+		// Update lastContacted of all successful recipient devices in sharedprefs
+		// Map each device ID to the last contact time
+		SharedPreferences.Editor editor = activity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0).edit();
+		for (String deviceId : successfulRecipientIds) {
+			editor.putLong(deviceId, System.currentTimeMillis());
 		}
-		for (Person p : successfulRecipients) allRecentContacts.add(p);
-		// No need to resort because the Set<String> in shared prefs isn't sorted anyway
-		
-		// TODO: make a helper method to convert ArrayList<Person> to Set<String> ?
-		// Save to shared prefs
-		ArrayList<String> newRecentContactStrings = new ArrayList<String>();
-		for (Person p : allRecentContacts) newRecentContactStrings.add(p.toJsonString());
-		SharedPreferences.Editor editor = sharedPrefs.edit();
-		editor.putStringSet(Constants.SHARED_PREFERENCES_RECENT_CONTACTS_KEY, new HashSet<String>(newRecentContactStrings));
 		editor.commit();
 		
-		// Notify the user based on result
-		if (result.size() == 0) {
-			// Send was successful
-			Toast.makeText(activity, "Message sent!", Toast.LENGTH_SHORT).show();
+		// Notify the user if there is no SIM card
+		if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_ABSENT)
+			Toast.makeText(activity, "Need SIM card to send text messages", Toast.LENGTH_SHORT).show();
+
+		// Send was successful
+		if (result) {
+		
+			if (successfulRecipientIds.size() > 0)
+				Toast.makeText(activity, "FindMe notification sent!", Toast.LENGTH_SHORT).show();
 			
 			// Launch back to NearbyPlacesActivity then close this activity
 			Intent intent = new Intent(activity, NearbyPlacesActivity.class);
@@ -123,9 +133,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, List<Person>> {
 			activity.finish();
 		} else {
 			// Send was unsuccessful
-			// TODO show names of unsuccessful recipients?
 			Toast.makeText(activity, "Unable to send message. Please try again soon.", Toast.LENGTH_LONG).show();
 		}
 	}
-
 }

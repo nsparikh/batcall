@@ -12,8 +12,6 @@ public class Constants {
 	public static final String SHARED_PREFERENCES_ACCOUNT_NAME_KEY = "saved_account_name";
 	public static final String SHARED_PREFERENCES_TEXT_ENABLED_KEY = "text_message_fallback_enabled";
 	public static final String SHARED_PREFERENCES_SAVED_CONTACTS_KEY = "saved_contact_list";
-	public static final String SHARED_PREFERENCES_NUM_RECENT_CONTACTS_KEY = "number_of_recent_contacts_displayed";
-	public static final String SHARED_PREFERENCES_RECENT_CONTACTS_KEY = "recent_contacts_list";
 	
 	// Crediential info
 	public static final int REQUEST_ACCOUNT_PICKER = 2;
@@ -25,6 +23,9 @@ public class Constants {
 	
 	// Key to store boolean value in an intent denoting whether it was launched from a refresh action
 	public static final String INTENT_REFRESH_KEY = "intent_refresh";
+	
+	// Headers for contacts list view
+	public static final String ALL_CONTACTS_HEADER = "ALL CONTACTS";
 	
 	// Keys for Person object fields
 	public static final String PERSON_NAME_KEY = "personName";
@@ -63,7 +64,6 @@ public class Constants {
 	// Keys for passing the selected Place object between activities using Bundles
 	public static final String SELECTED_PLACE_KEY = "selected_place";
 	public static final String SELECTED_RECIPIENTS_KEY = "selected_recipients";
-	public static final String SENDER_NAME_KEY = "sender_name";
 	
 	// Vibration time (in milliseconds)
 	public static final int VIBRATION_TIME = 30;

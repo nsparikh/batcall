@@ -17,6 +17,7 @@ import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.neenaparikh.locationsender.ContactsActivity;
 import com.neenaparikh.locationsender.ContactsArrayAdapter;
@@ -58,7 +59,11 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 
 	private ContactsActivity mActivity;
 	private ProgressDialog pDialog;
+	private String dialogMessage;
+	private boolean success;
+	
 	private Deviceinfoendpoint endpoint;
+	private SharedPreferences sharedPrefs;
 	private boolean isTextFallbackEnabled; // if not, only display contacts who are registered
 	
 
@@ -68,6 +73,7 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		endpoint = GCMIntentService.getAuthDeviceInfoEndpoint(activity);
 		isTextFallbackEnabled = mActivity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)
 				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, false);
+		sharedPrefs = mActivity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
 	}
 
 	/**
@@ -78,7 +84,8 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		super.onPreExecute();
 
 		pDialog = new ProgressDialog(mActivity);
-		pDialog.setMessage("Retrieving contacts...\nThis may take a minute the first time you launch the app.");
+		dialogMessage = "Retrieving contacts...\n(This may take a minute the first time you launch the app.)";
+		pDialog.setMessage(dialogMessage);
 		pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		pDialog.setCancelable(false);
 		pDialog.show();
@@ -89,7 +96,12 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 	 */
 	@Override
 	protected void onProgressUpdate(Integer... progress) {
-		pDialog.setProgress(progress[0]);
+		int p = progress[0];
+		if (p == 0) {
+			// Update the progress dialog message
+			pDialog.setMessage(dialogMessage);
+		}
+		pDialog.setProgress(p);
 	}
 
 	/**
@@ -111,11 +123,12 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 				if (p.isRegistered()) displayList.add(p);
 				else if (isTextFallbackEnabled && p.hasPhones()) displayList.add(p);
 			}
+			success = true;
 			return displayList;
 			
 		} catch (IOException e) {
-			Log.e(LoadContactsTask.class.getName(), "IOException in getAllContacts(): " + e.getMessage());
-			e.printStackTrace();
+			Log.e(LoadContactsTask.class.getName(), "IOException in doInBackground: " + e.getMessage());
+			success = false;
 			return new ArrayList<Person>();
 		}
 	}
@@ -133,11 +146,15 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		// Update the UI thread
 		mActivity.runOnUiThread(new Runnable() {
 			public void run() {
-
-				// Bind the list of contact names to the list view
-				final ListView contactsListView = (ListView) mActivity.findViewById(R.id.contacts_list_view);
-				contactsListView.setAdapter(new ContactsArrayAdapter(mActivity, resultList));
-
+				
+				// If we got a network exception, notify the user
+				if (!success) {
+					Toast.makeText(mActivity, "Server error. Please try again soon.", Toast.LENGTH_SHORT).show();
+				} else {
+					// Bind the list of all contact names to the list view
+					final ListView contactsListView = (ListView) mActivity.findViewById(R.id.contacts_list_view);
+					contactsListView.setAdapter(new ContactsArrayAdapter(mActivity, resultList));
+				}
 			}
 		});
 	}
@@ -215,43 +232,62 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 			emailCursor.close();
 			currentPerson.setEmails(emailAddresses);
 			
+			
 			contacts.add(currentPerson);
 			currentIndex++;
 		}
-		
 		cursor.close();
 		
-		// TODO: clean up this code, also update the progress dialog to show something else
+
 		// Go through and find registered devices for all phone numbers in contact list
-		Log.w(LoadContactsTask.class.getName(), "Getting matched phones");
 		ArrayList<String> phoneList = new ArrayList<String>(phoneMap.keySet());
+		ArrayList<String> emailList = new ArrayList<String>(emailMap.keySet());
+		dialogMessage = "Checking for registered friends...\n(This may take a minute the first time you launch the app.)";
+		pDialog.setMax(phoneList.size() + emailList.size());
+		publishProgress(0);
+		
+		// TODO: clean up this code!
+		// Check against all phones for registered phone numbers
 		for (int i = 0; i < phoneList.size(); i+=20) {
+			publishProgress(i);
 			String phoneListString = HelperMethods.stringListToString(
 					phoneList.subList(i, Math.min(i+20, phoneList.size())));
 			CollectionResponseDeviceInfo matchedPhoneDevices = endpoint.findDevicesByPhoneList(phoneListString).execute();
 			if (matchedPhoneDevices != null && matchedPhoneDevices.getItems() != null) {
 				for (DeviceInfo matchedPhoneDevice : matchedPhoneDevices.getItems()) {
 					String matchedPhone = matchedPhoneDevice.getPhoneNumber();
-					phoneMap.get(matchedPhone).addDeviceRegistrationId(matchedPhoneDevice.getDeviceRegistrationID());
+					String deviceId = matchedPhoneDevice.getDeviceRegistrationID();
+					Person p = phoneMap.get(matchedPhone);
+					p.addDeviceRegistrationId(deviceId);
+					
+					// Check for last contact time of this deviceId
+					p.setLastContacted(sharedPrefs.getLong(deviceId, p.getLastContacted()));
 				}
 			}
 		}
 		
-		
-		Log.w(LoadContactsTask.class.getName(), "Getting matched emails");
-		ArrayList<String> emailList = new ArrayList<String>(emailMap.keySet());
+		// Check against all emails for registered email addresses
 		for (int i = 0; i < emailList.size(); i+=20) {
+			publishProgress(i + phoneList.size());
 			String emailListString = HelperMethods.stringListToString(
 					emailList.subList(i, Math.min(i+20, emailList.size())));
 			CollectionResponseDeviceInfo matchedEmailDevices = endpoint.findDevicesByEmailList(emailListString).execute();
 			if (matchedEmailDevices != null && matchedEmailDevices.getItems() != null) {
 				for (DeviceInfo matchedEmailDevice : matchedEmailDevices.getItems()) {
-					String matchedEmail = matchedEmailDevice.getUserEmail();
-					emailMap.get(matchedEmail).addDeviceRegistrationId(matchedEmailDevice.getDeviceRegistrationID());
+					String matchedEmail = matchedEmailDevice.getUserEmail(); 
+					String deviceId = matchedEmailDevice.getDeviceRegistrationID();
+					Person p = emailMap.get(matchedEmail);
+					p.addDeviceRegistrationId(deviceId);
+					
+					// Check for last contact time of this deviceId
+					p.setLastContacted(sharedPrefs.getLong(deviceId, p.getLastContacted()));
 				}
 			}	
 		}
 
+		// Save contacts to shared prefs
+		savePersonList(contacts);
+		
 		Collections.sort(contacts);
 		return contacts;
 	}
@@ -262,20 +298,11 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 	 * @throws IOException 
 	 */
 	private ArrayList<Person> getSavedContacts() throws IOException {
-		SharedPreferences sharedPrefs = mActivity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
 		Set<String> savedPersonStrings = sharedPrefs.getStringSet(Constants.SHARED_PREFERENCES_SAVED_CONTACTS_KEY, new HashSet<String>());
 		
-		// If we haven't saved any, just call getAllContacts and save to shared prefs
+		// If we haven't saved any, just call getAllContacts
 		if (savedPersonStrings.size() == 0) {
-			ArrayList<Person> personList = getAllContacts();
-			
-			ArrayList<String> personStrings = new ArrayList<String>();
-			for (Person p : personList) personStrings.add(p.toJsonString());
-			SharedPreferences.Editor editor = sharedPrefs.edit();
-			editor.putStringSet(Constants.SHARED_PREFERENCES_SAVED_CONTACTS_KEY, new HashSet<String>(personStrings));
-			editor.commit();
-			
-			return personList;
+			return getAllContacts();
 		} else {
 			pDialog.setMax(savedPersonStrings.size());
 			
@@ -286,14 +313,31 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 			for (String personString : savedPersonStrings) {
 				publishProgress(count);
 				Person p = Person.personFromJsonString(personString);
-				if (p != null) personList.add(p);
-				count++;
+				if (p != null) {
+					personList.add(p);
+					
+					// Check in shared prefs for device IDs to get last contact time
+					for (String deviceId : p.getDeviceRegistrationIdList()) {
+						long lastContacted = p.getLastContacted();
+						p.setLastContacted(sharedPrefs.getLong(deviceId, lastContacted));
+					}
+				}
 			}
 			Collections.sort(personList);
 			return personList;
 		}
-		
-		
+	}
+
+	
+	/**
+	 * Saves the given list of person objects to the shared prefs
+	 */
+	private void savePersonList(ArrayList<Person> personList) {
+		ArrayList<String> personStrings = new ArrayList<String>();
+		for (Person p : personList) personStrings.add(p.toJsonString());
+		SharedPreferences.Editor editor = sharedPrefs.edit();
+		editor.putStringSet(Constants.SHARED_PREFERENCES_SAVED_CONTACTS_KEY, new HashSet<String>(personStrings));
+		editor.commit();
 	}
 }
 

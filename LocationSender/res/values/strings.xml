@@ -20,6 +20,9 @@
     <string name="settings_text_checkbox_key">settings_text_message_checkbox</string>
     <string name="settings_num_recent_contacts_key">number_of_recent_contacts</string>
     <string name="settings_num_recent_contacts_title">Number of recent contacts displayed</string>
+    <string name="settings_delete_account_key">settings_delete_account_button</string>
+    <string name="settings_delete_account_title">Delete Account</string>
+    <string name="settings_delete_account_summary">This will remove your FindMe account, but will not delete your Google Account.</string>
     
     <string name="retry_button_text">Retry</string>
     <string name="cancel">Cancel</string>
@@ -32,9 +35,13 @@
     <string name="default_image_description">ImageView</string>
     <string name="default_contact_list_item_name">Contact Name</string>
     <string name="default_contact_list_item_subheading">Send as text message</string>
-    <string name="activity_contacts_send_button_text">Send...</string>
+    <string name="default_contact_list_header">Contacts</string>
+    <string name="activity_contacts_send_button_text">Send&#8230;</string>
     
     <string name="confirmation_dialog_confirm_text">Send</string>
+    
+    <string name="delete_account_confirm_title">Delete account?</string>
+    <string name="delete_account_confirm_button_text">Delete</string>
     
     
    

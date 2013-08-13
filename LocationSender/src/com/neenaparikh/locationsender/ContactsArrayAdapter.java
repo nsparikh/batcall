@@ -21,30 +21,37 @@ public class ContactsArrayAdapter extends ArrayAdapter<Person> {
 	private ContactsActivity mActivity;
 	private final ArrayList<Person> personList;
 	private final boolean[] selectedPersonIndexes;
+	private LayoutInflater mInflater;
 
 	private final int[] defaultImageResources = { R.drawable.emo_1, R.drawable.emo_2, R.drawable.emo_3, 
 			R.drawable.emo_4, R.drawable.emo_5, R.drawable.emo_6 };
 	private int defaultImageResourceIndex = 0;
 
+	/**
+	 * Constructor takes in activity, list of Person objects, and header title
+	 * @param mActivity The activity
+	 * @param personList The list of Person objects
+	 * @param title The header title of this list
+	 */
 	public ContactsArrayAdapter(ContactsActivity mActivity, ArrayList<Person> personList) {
 		super(mActivity, R.layout.contact_list_item, personList);
 
 		this.mActivity = mActivity;
 		this.personList = personList;
-
 		this.selectedPersonIndexes = new boolean[personList.size()];
+		this.mInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
 	}
 
+	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		View currentRowItem = convertView;
 
-		// Get the current person object and set relevant fields in the view
+		// Otherwise, get the current person object and set relevant fields in the view
 		final Person currentPerson = personList.get(position);
 
 		// Inflate the row item 
-		LayoutInflater inflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
-		if (currentPerson.isRegistered()) currentRowItem = inflater.inflate(R.layout.contact_list_item, null);
-		else currentRowItem = inflater.inflate(R.layout.contact_list_item_with_subheading, null);
+		if (currentPerson.isRegistered()) currentRowItem = mInflater.inflate(R.layout.contact_list_item, null);
+		else currentRowItem = mInflater.inflate(R.layout.contact_list_item_with_subheading, null);
 
 		// Set name
 		TextView nameTextView = (TextView) currentRowItem.findViewById(R.id.contact_list_item_name);
@@ -61,7 +68,6 @@ public class ContactsArrayAdapter extends ArrayAdapter<Person> {
 			defaultImageResourceIndex++;
 			defaultImageResourceIndex %= defaultImageResources.length;
 		}
-
 
 		// Set check box selection listener
 		CheckBox checkBox = (CheckBox) currentRowItem.findViewById(R.id.contact_list_item_checkbox);

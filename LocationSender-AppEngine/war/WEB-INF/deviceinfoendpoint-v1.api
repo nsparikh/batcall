@@ -102,21 +102,6 @@
         "body" : "autoTemplate(backendResponse)"
       }
     },
-    "deviceinfoendpoint.updateDeviceInfo" : {
-      "path" : "deviceinfo",
-      "httpMethod" : "PUT",
-      "scopes" : [ ],
-      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
-      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo",
-      "request" : {
-        "body" : "autoTemplate(backendRequest)",
-        "bodyName" : "resource"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
-    },
     "deviceinfoendpoint.removeDeviceInfo" : {
       "path" : "deviceinfo/{id}",
       "httpMethod" : "DELETE",
@@ -135,6 +120,21 @@
       },
       "response" : {
         "body" : "empty"
+      }
+    },
+    "deviceinfoendpoint.updateDeviceInfo" : {
+      "path" : "deviceinfo",
+      "httpMethod" : "PUT",
+      "scopes" : [ ],
+      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
+      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo",
+      "request" : {
+        "body" : "autoTemplate(backendRequest)",
+        "bodyName" : "resource"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
       }
     }
   },
@@ -214,6 +214,8 @@
           "$ref" : "CollectionResponse_DeviceInfo"
         }
       },
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.removeDeviceInfo" : {
+      },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo" : {
         "request" : {
           "$ref" : "DeviceInfo"
@@ -221,8 +223,6 @@
         "response" : {
           "$ref" : "DeviceInfo"
         }
-      },
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.removeDeviceInfo" : {
       }
     }
   }

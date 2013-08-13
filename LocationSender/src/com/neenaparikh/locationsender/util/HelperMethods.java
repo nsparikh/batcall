@@ -5,7 +5,10 @@ import java.util.List;
 
 import android.telephony.PhoneNumberUtils;
 
+import com.neenaparikh.locationsender.model.Place;
+
 public class HelperMethods {
+	private static final String[] AM_PM = {"AM", "PM"};
 
 	/**
 	 * Helper method to format the dialog message given the recipients and duration.
@@ -13,7 +16,7 @@ public class HelperMethods {
 	 * @param duration The duration for which to send the notification
 	 * @return A sensical dialog message to display
 	 */
-	public static String formatMessage(List<String> recipientNames, int duration) {
+	public static String formatDialogMessage(List<String> recipientNames) {
 		String message = "Send notification to ";
 
 		// Add recipient names
@@ -21,7 +24,7 @@ public class HelperMethods {
 		if (numRecipients == 1) {
 			message += recipientNames.get(0);
 		} else if (numRecipients == 2) {
-			message += recipientNames.get(0) + " and " + recipientNames.get(0);
+			message += recipientNames.get(0) + " and " + recipientNames.get(1);
 		} else {
 			for (int i = 0; i < numRecipients - 1; i++) {
 				message += recipientNames.get(i) + ", ";
@@ -30,6 +33,23 @@ public class HelperMethods {
 		}
 
 		message += "?";
+		return message;
+	}
+	
+	/**
+	 * Given the sender's name and the Place object, return the body of the text
+	 * message notification to send.
+	 */
+	public static String formatTextMessage(Place place) {
+		String message = "Notification from FindMe:\n";
+		message += "I am at " + place.getName();
+	
+		// Add address if any
+		String placeAddress = place.getAddress();
+		if (placeAddress.length() > 0) message += "(" + placeAddress + ")";
+		
+		message += " until " + getTimeAfterStart(System.currentTimeMillis(), place.getDuration());
+		
 		return message;
 	}
 
@@ -70,8 +90,7 @@ public class HelperMethods {
 		String minuteString = "";
 		if (minute < 10) minuteString = "0" + minute;
 		else minuteString = "" + minute;
-		String timeString = calendar.get(Calendar.HOUR) + ":" + minuteString + " " + calendar.get(Calendar.AM_PM);
-		// TODO: Calendar.AM_PM returns an int?
+		String timeString = calendar.get(Calendar.HOUR) + ":" + minuteString + " " + AM_PM[calendar.get(Calendar.AM_PM)];
 		return timeString;
 	}
 

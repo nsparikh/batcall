@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#33B5E5"
+    android:paddingLeft="4dp"
+    android:paddingTop="2dp"
+    android:paddingRight="4dp"
+    android:paddingBottom="2dp" >
+
+    <TextView
+        android:id="@+id/contact_list_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:text="@string/default_contact_list_header"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="14sp" />
+
+</RelativeLayout>

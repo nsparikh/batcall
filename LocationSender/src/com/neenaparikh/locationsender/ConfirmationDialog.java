@@ -39,7 +39,7 @@ public class ConfirmationDialog extends DialogFragment {
 		builder.setTitle(selectedPlace.getName());
 		ArrayList<String> recipientNames = new ArrayList<String>();
 		for (Person p : recipients) recipientNames.add(p.getName());
-		builder.setMessage(HelperMethods.formatMessage(recipientNames, selectedPlace.getDuration()));
+		builder.setMessage(HelperMethods.formatDialogMessage(recipientNames));
 		
 		builder.setPositiveButton(R.string.confirmation_dialog_confirm_text, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {

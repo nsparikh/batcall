@@ -8,10 +8,9 @@
             android:title="@string/settings_text_checkbox_title"
             android:summary="@string/settings_text_checkbox_summary" />
         
-        <ListPreference android:key="@string/settings_num_recent_contacts_key"
-            android:title="@string/settings_num_recent_contacts_title" 
-            android:entries="@array/num_recent_contacts_choices"
-            android:entryValues="@array/num_recent_contacts_choices_values" />
+        <Preference android:key="@string/settings_delete_account_key"
+            android:title="@string/settings_delete_account_title"
+            android:summary="@string/settings_delete_account_summary" />
         
     </PreferenceCategory>
 
