@@ -39,6 +39,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 	private Activity activity;
 	private Place place;
 	private Set<String> successfulRecipientIds;
+	private boolean hasTextRecipients = false;
 	private TelephonyManager telephonyManager;
     
 
@@ -88,6 +89,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		// Send text message to recipients who are unregistered, if any
 		int numTextRecipients = textMessageRecipients.size();
 		if (numTextRecipients > 0) {
+			hasTextRecipients = true;
 			SendTextMessageTask textTask = new SendTextMessageTask(activity, place);
 			textTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, textMessageRecipients.toArray(new Person[numTextRecipients]));
 			try {
@@ -118,7 +120,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		editor.commit();
 		
 		// Notify the user if there is no SIM card
-		if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_ABSENT)
+		if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_ABSENT && hasTextRecipients)
 			Toast.makeText(activity, "Need SIM card to send text messages", Toast.LENGTH_SHORT).show();
 
 		// Send was successful
