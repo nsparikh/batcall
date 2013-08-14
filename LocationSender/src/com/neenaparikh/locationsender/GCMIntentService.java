@@ -192,8 +192,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 		// Launches the place in the Maps application
 		Intent notificationIntent = new Intent(Intent.ACTION_VIEW, place.getUri());
 		Notification notification = new Notification.Builder(this)
-			.setSmallIcon(R.drawable.ic_launcher)
-			.setContentTitle("FindMe notification from " + senderName)
+			.setSmallIcon(R.drawable.batcall_ic_launcher)
+			.setContentTitle("BatCall from " + senderName)
 			.setContentText(senderName + " is at: " + place.getName() + " until " + 
 					HelperMethods.getTimeAfterStart(timestamp, place.getDuration()))
 			.setWhen(timestamp)

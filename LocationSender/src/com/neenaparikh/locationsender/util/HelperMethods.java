@@ -41,7 +41,7 @@ public class HelperMethods {
 	 * message notification to send.
 	 */
 	public static String formatTextMessage(Place place) {
-		String message = "Notification from FindMe:\n";
+		String message = "Notification from BatCall:\n";
 		message += "I am at " + place.getName();
 	
 		// Add address if any

@@ -72,7 +72,7 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		mActivity = activity;
 		endpoint = GCMIntentService.getAuthDeviceInfoEndpoint(activity);
 		isTextFallbackEnabled = mActivity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)
-				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, false);
+				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, true);
 		sharedPrefs = mActivity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
 	}
 

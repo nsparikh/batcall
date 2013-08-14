@@ -2,11 +2,11 @@ package com.neenaparikh.locationsender;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -18,13 +18,16 @@ public class MainActivity extends Activity {
 	private SharedPreferences sharedPrefs;
 	private GoogleAccountCredential credential;
 
-	private ProgressDialog pDialog;
 	private Button retryButton;
+	private Button signupButton;
 
-	// TODO change layout / appearance to look like more of a launch screen
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		// Remove title bar
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		
 		setContentView(R.layout.activity_main);
 
 		// Make sure Retry button isn't visible to start
@@ -36,12 +39,14 @@ public class MainActivity extends Activity {
 		credential = GoogleAccountCredential.usingAudience(this, Constants.CREDENTIAL_AUDIENCE);
 		setAccountName(sharedPrefs.getString(Constants.SHARED_PREFERENCES_ACCOUNT_NAME_KEY, null));
 
+		signupButton = (Button) findViewById(R.id.main_activity_signup_button);
 		if (credential.getSelectedAccountName() != null) {
 			// Already signed in, begin app!
+			signupButton.setVisibility(View.GONE);
 			onSignIn();	
 		} else {
-			// Not signed in, request an account by showing an account picker
-			startActivityForResult(credential.newChooseAccountIntent(), Constants.REQUEST_ACCOUNT_PICKER);
+			// Not signed in, show "Sign Up" button to prompt user to choose an account
+			signupButton.setVisibility(View.VISIBLE);
 		}
 	}
 
@@ -49,11 +54,7 @@ public class MainActivity extends Activity {
 	 * Called when the user has successfully authenticated / signed in.
 	 */
 	private void onSignIn() {
-		// Show a progress dialog
-		pDialog = new ProgressDialog(this);
-		pDialog.setMessage("Registering...");
-		pDialog.setCancelable(false);
-		pDialog.show();
+		signupButton.setVisibility(View.GONE);
 
 		// Register the device
 		GCMIntentService.register(getApplicationContext());
@@ -103,7 +104,6 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		pDialog.dismiss();
 
 		// First determine whether the intent came from GCMIntentService 
 		if (intent.getBooleanExtra(Constants.GCM_INTENT_SERVICE_KEY, false)) {
@@ -122,12 +122,18 @@ public class MainActivity extends Activity {
 	}
 
 	/**
-	 * Called when the user clicks the "Retry" button. Just relaunches this activity.
-	 * @author neenaparikh
-	 *
+	 * Called when the user clicks the "Retry" button. Just retries the registration process.
 	 */
 	public void onClickRetry(View view) {
 		onSignIn();
+	}
+	
+	/**
+	 * Called when the user clicks the "Sign In" button
+	 */
+	public void onClickSignup(View view) {
+		// request an account by showing an account picker
+		startActivityForResult(credential.newChooseAccountIntent(), Constants.REQUEST_ACCOUNT_PICKER);
 	}
 
 }

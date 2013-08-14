@@ -150,7 +150,7 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 			@Override
 			public void initialize(HttpRequest request) throws IOException {
 				HttpHeaders headers = new HttpHeaders();
-				headers.setUserAgent("Batsignal");
+				headers.setUserAgent("Batcall");
 				request.setHeaders(headers);
 				JsonObjectParser parser = new JsonObjectParser(new JacksonFactory());
 				request.setParser(parser);

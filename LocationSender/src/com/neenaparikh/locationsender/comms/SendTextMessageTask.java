@@ -44,7 +44,7 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, Boolean> {
 	public SendTextMessageTask(Activity activity, Place place) {
 		this.activity = activity;
 		this.isTextFallbackEnabled = activity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)
-				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, false);
+				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, true);
 		this.smsManager = SmsManager.getDefault();
 		this.telephonyManager = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
 		this.notificationMessage = HelperMethods.formatTextMessage(place);

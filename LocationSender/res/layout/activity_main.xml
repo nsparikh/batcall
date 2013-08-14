@@ -2,12 +2,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#33B5E5"
     android:padding="8dp" >
+    
+    <ImageView android:id="@+id/main_activity_title_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_centerInParent="true"
+        android:contentDescription="@string/default_image_description"
+        android:src="@drawable/batcall_title" />
+    
+    <Button
+        android:id="@+id/main_activity_signup_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+    	android:background="#0099CC"
+        android:onClick="onClickSignup"
+        android:text="@string/signup_button_text"
+        android:textSize="18sp" />
     
     <Button android:id="@+id/main_activity_retry_button"
         android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:layout_centerVertical="true"
+		android:layout_alignParentBottom="true"
+		android:visibility="gone"
 		android:onClick="onClickRetry"
 		android:textSize="18sp"
 		android:text="@string/retry_button_text" />

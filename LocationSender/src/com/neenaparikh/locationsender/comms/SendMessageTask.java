@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -41,6 +42,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 	private Set<String> successfulRecipientIds;
 	private boolean hasTextRecipients = false;
 	private TelephonyManager telephonyManager;
+	private ProgressDialog pDialog;
     
 
 	/**
@@ -51,11 +53,25 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 	public SendMessageTask(Activity activity, Place place) {
 		this.endpoint = GCMIntentService.getAuthMessageEndpoint(activity);
 		this.isTextFallbackEnabled = activity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)
-				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, false);
+				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, true);
 		this.activity = activity;
 		this.place = place;
 		this.successfulRecipientIds = new HashSet<String>();
 		this.telephonyManager = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+	}
+	
+	/**
+	 * Before starting background thread, show progress dialog
+	 **/
+	@Override
+	protected void onPreExecute() {
+		super.onPreExecute();
+
+		pDialog = new ProgressDialog(activity);
+		pDialog.setMessage("Sending...");
+		pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		pDialog.setCancelable(false);
+		pDialog.show();
 	}
 
 	/**
@@ -110,6 +126,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 	 */
 	@Override
 	protected void onPostExecute(Boolean result) {
+		pDialog.dismiss();
 		
 		// Update lastContacted of all successful recipient devices in sharedprefs
 		// Map each device ID to the last contact time
@@ -127,7 +144,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		if (result) {
 		
 			if (successfulRecipientIds.size() > 0)
-				Toast.makeText(activity, "FindMe notification sent!", Toast.LENGTH_SHORT).show();
+				Toast.makeText(activity, "BatCall notification sent!", Toast.LENGTH_SHORT).show();
 			
 			// Launch back to NearbyPlacesActivity then close this activity
 			Intent intent = new Intent(activity, NearbyPlacesActivity.class);
