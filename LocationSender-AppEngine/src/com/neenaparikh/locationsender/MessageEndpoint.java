@@ -66,7 +66,7 @@ public class MessageEndpoint {
 		}
 		
 		// Find recipient device, if any
-		DeviceInfo matchedDevice = endpoint.getDeviceInfo(deviceRegistrationId);
+		DeviceInfo matchedDevice = endpoint.getDeviceInfo(user, deviceRegistrationId);
 		if (matchedDevice == null) return new BooleanResult(false);
 		
 		Sender sender = new Sender(API_KEY);
@@ -140,14 +140,14 @@ public class MessageEndpoint {
 		if (result.getMessageId() != null) {
 			String canonicalRegId = result.getCanonicalRegistrationId();
 			if (canonicalRegId != null) {
-				endpoint.removeDeviceInfo(deviceInfo.getDeviceRegistrationID());
+				endpoint.removeDeviceInfo(user, deviceInfo.getDeviceRegistrationID());
 				deviceInfo.setDeviceRegistrationID(canonicalRegId);
-				endpoint.insertDeviceInfo(deviceInfo, user);
+				endpoint.insertDeviceInfo(user, deviceInfo);
 			}
 		} else {
 			String error = result.getErrorCodeName();
 			if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
-				endpoint.removeDeviceInfo(deviceInfo.getDeviceRegistrationID());
+				endpoint.removeDeviceInfo(user, deviceInfo.getDeviceRegistrationID());
 			}
 		}
 

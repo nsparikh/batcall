@@ -37,16 +37,20 @@ import com.google.appengine.api.users.User;
 )
 public class DeviceInfoEndpoint {
 
-	
-
 	/**
 	 * This method gets the entity having primary key id. It uses HTTP GET method.
 	 *
+	 * @param user the authenticated user
 	 * @param id the primary key of the java bean.
 	 * @return The entity with primary key id.
+	 * @throws OAuthRequestException 
 	 */
 	@ApiMethod(name = "getDeviceInfo")
-	public DeviceInfo getDeviceInfo(@Named("id") String id) {
+	public DeviceInfo getDeviceInfo(User user, @Named("id") String id) throws OAuthRequestException {
+		if (user == null) {
+			throw new OAuthRequestException("User is not authenticated");
+		}
+		
 		EntityManager mgr = getEntityManager();
 		DeviceInfo deviceinfo = null;
 		try {
@@ -59,13 +63,20 @@ public class DeviceInfoEndpoint {
 	
 	/**
 	 * Finds the devices with the given phone numbers.
-	 * @param phones The given phone numbers in a single string, separated by commas
+	 * @param user the authenticated user
+	 * @param phoneListString The given phone numbers in a single string, separated by commas
 	 * @return DeviceInfo objects associated with the phone number, or null if there are none.
 	 * 	These DeviceInfo objects do not contain all information from the datastore, but rather
 	 * 	just their keys and associated phone numbers because that is all the information we need.
+	 * @throws OAuthRequestException 
 	 */
 	@ApiMethod(name = "findDevicesByPhoneList")
-	public CollectionResponse<DeviceInfo> findDevicesByPhoneList(@Named("phoneListString") String phoneListString) {
+	public CollectionResponse<DeviceInfo> findDevicesByPhoneList(User user, @Named("phoneListString") String phoneListString) 
+			throws OAuthRequestException {
+		if (user == null) {
+			throw new OAuthRequestException("User is not authenticated");
+		}
+		
 		if (phoneListString == null || phoneListString.length() == 0) return null;
 		
 		String[] phones = phoneListString.split(",");
@@ -100,13 +111,20 @@ public class DeviceInfoEndpoint {
 	
 	/**
 	 * Finds the devices with the given email addresses.
+	 * @param user the authenticated user
 	 * @param emailListString The given email addresses in a single string, separated by commas
 	 * @return The DeviceInfo objects associated with the phone number, or null if there are none.
 	 * 	These DeviceInfo objects do not contain all information from the datastore, but rather
 	 * 	just their keys and associated email addresses because that is all the information we need.
+	 * @throws OAuthRequestException 
 	 */
 	@ApiMethod(name = "findDevicesByEmailList")
-	public CollectionResponse<DeviceInfo> findDevicesByEmailList(@Named("emailListString") String emailListString) {
+	public CollectionResponse<DeviceInfo> findDevicesByEmailList(User user, @Named("emailListString") String emailListString) 
+			throws OAuthRequestException {
+		if (user == null) {
+			throw new OAuthRequestException("User is not authenticated");
+		}
+		
 		if (emailListString == null || emailListString.length() == 0) return null;
 		
 		String[] emails = emailListString.split(",");
@@ -144,15 +162,18 @@ public class DeviceInfoEndpoint {
 	 * exists in the datastore, an exception is thrown.
 	 * It uses HTTP POST method.
 	 *
+	 * @param user the authenticated user
 	 * @param deviceinfo the entity to be inserted.
 	 * @return The inserted entity.
 	 * @throws OAuthRequestException 
 	 */
 	@ApiMethod(name = "insertDeviceInfo")
-	public DeviceInfo insertDeviceInfo(DeviceInfo deviceinfo, User user) throws OAuthRequestException {
+	public DeviceInfo insertDeviceInfo(User user, DeviceInfo deviceinfo) 
+			throws OAuthRequestException {
 		if (user == null) {
 			throw new OAuthRequestException("User is not authenticated");
 		}
+		
 		EntityManager mgr = getEntityManager();
 		try {
 			if (containsDeviceInfo(deviceinfo)) {
@@ -177,11 +198,18 @@ public class DeviceInfoEndpoint {
 	 * exist in the datastore, an exception is thrown.
 	 * It uses HTTP PUT method.
 	 *
+	 * @param user the authenticated user
 	 * @param deviceinfo the entity to be updated.
 	 * @return The updated entity.
+	 * @throws OAuthRequestException 
 	 */
 	@ApiMethod(name = "updateDeviceInfo")
-	public DeviceInfo updateDeviceInfo(DeviceInfo deviceinfo) {
+	public DeviceInfo updateDeviceInfo(User user, DeviceInfo deviceinfo) 
+			throws OAuthRequestException {
+		if (user == null) {
+			throw new OAuthRequestException("User is not authenticated");
+		}
+		
 		EntityManager mgr = getEntityManager();
 		try {
 			if (!containsDeviceInfo(deviceinfo)) {
@@ -198,10 +226,16 @@ public class DeviceInfoEndpoint {
 	 * This method removes the entity with primary key id.
 	 * It uses HTTP DELETE method.
 	 *
+	 * @param user the authenticated user
 	 * @param id the primary key of the entity to be deleted.
+	 * @throws OAuthRequestException 
 	 */
 	@ApiMethod(name = "removeDeviceInfo")
-	public void removeDeviceInfo(@Named("id") String id) {
+	public void removeDeviceInfo(User user, @Named("id") String id) throws OAuthRequestException {
+		if (user == null) {
+			throw new OAuthRequestException("User is not authenticated");
+		}
+		
 		EntityManager mgr = getEntityManager();
 		try {
 			DeviceInfo deviceinfo = mgr.find(DeviceInfo.class, id);
