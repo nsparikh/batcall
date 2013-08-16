@@ -7,7 +7,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -20,12 +19,9 @@ import com.neenaparikh.locationsender.util.Constants;
  *
  */
 public class NearbyPlacesActivity extends Activity {
-	private static final String TAG = "NearbyPlacesActivity";
-
 	private LocationManager mLocationManager;
 	private LocationListener mLocationListener;
 	private Location currentLocation;
-
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,20 +49,13 @@ public class NearbyPlacesActivity extends Activity {
 			}
 
 			@Override
-			public void onProviderDisabled(String provider) {
-				Log.i(TAG, "Location provider disabled");				
-			}
+			public void onProviderDisabled(String provider) {}
 
 			@Override
-			public void onProviderEnabled(String provider) {
-				Log.i(TAG, "Location provider enabled");	
-			}
+			public void onProviderEnabled(String provider) {}
 
 			@Override
-			public void onStatusChanged(String provider, int status,
-					Bundle extras) {
-				Log.i(TAG, "Location listener status changed");	
-			}			
+			public void onStatusChanged(String provider, int status, Bundle extras) {}			
 		};
 		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, mLocationListener);
 		
@@ -77,8 +66,16 @@ public class NearbyPlacesActivity extends Activity {
 		if (currentLocation != null) new LoadPlacesTask(this, true).execute(currentLocation);
 	}
 	
-	public void removeLocationUpdates() {
+	@Override
+	public void onPause() {
+		super.onPause();
 		mLocationManager.removeUpdates(mLocationListener);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, mLocationListener);
 	}
 	
 	@Override

@@ -25,3 +25,4 @@ proguard/
 # Other
 .metadata/
 .DS_Store
+*.keystore

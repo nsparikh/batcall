@@ -32,7 +32,7 @@ import com.google.appengine.api.users.User;
 		packagePath = "locationsender"
 	),
 	clientIds = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com",
-				 "655975699066.apps.googleusercontent.com"},
+				 "655975699066-bnjprcsgqnma91angd05n0ijfq9nvj5t.apps.googleusercontent.com"},
 	audiences = {"655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com"}
 )
 public class DeviceInfoEndpoint {

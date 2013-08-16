@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMBaseIntentService;
@@ -71,7 +70,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	@Override
 	public void onError(Context context, String errorId) {
-		Log.e(GCMIntentService.class.getName(), "GCM registration failed. Check project number?");
 		sendRegisterIntent(context, false, null);
 	}
 
@@ -99,7 +97,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				senderName = existingInfo.getUserName();
 			}
 		} catch (IOException e) {
-			Log.e(GCMIntentService.class.getName(), "IOException: " + e.getMessage());
+			return;
 		}
 
 		try {
@@ -125,13 +123,9 @@ public class GCMIntentService extends GCMBaseIntentService {
 				senderName = endpoint.getDeviceInfo(registration).execute().getUserName();
 			}
 		} catch (IOException e) {
-			Log.e(GCMIntentService.class.getName(),
-					"Exception received when attempting to register with server at "
-							+ endpoint.getRootUrl(), e);
 			sendRegisterIntent(context, false, senderName);
 			return;
 		}
-		Log.i(GCMIntentService.class.getName(), "Registration success!");
 		sendRegisterIntent(context, true, senderName);
 	}
 
@@ -151,15 +145,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 				endpoint.removeDeviceInfo(registrationId).execute();
 				sendUnregisterIntent(context, true);
 			} catch (IOException e) {
-				Log.e(GCMIntentService.class.getName(),
-						"Exception received when attempting to unregister with server at "
-								+ endpoint.getRootUrl(), e);
 				sendUnregisterIntent(context, false);
 				return;
 			}
 		}
-
-		Log.i(GCMIntentService.class.getName(), "Unregistration succeeded!");
 	}
 
 
@@ -231,7 +220,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			
 			// Relaunch app from the start
 			Intent intent = new Intent(context, MainActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 			startActivity(intent);
 			
 		} else {

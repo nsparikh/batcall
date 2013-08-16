@@ -10,7 +10,7 @@ import com.neenaparikh.locationsender.util.Constants;
 
 
 
-public class Place implements Parcelable {
+public class Place implements Parcelable, Comparable<Place> {
 	
 	// Place object
 	@Key("id")
@@ -267,6 +267,13 @@ public class Place implements Parcelable {
 	}
 	
 	/**
+	 * Compares two Place objects alphabetically by name
+	 */
+	public int compareTo(Place other) {
+		return getName().compareToIgnoreCase(other.getName());
+	}
+	
+	/**
 	 * Writes object data to parcel
 	 */
 	public void writeToParcel(Parcel out, int flags) {
@@ -312,5 +319,7 @@ public class Place implements Parcelable {
 		return 0;
 		
 	}
+	
+	
 
 }

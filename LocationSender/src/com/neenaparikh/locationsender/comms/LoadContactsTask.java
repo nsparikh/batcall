@@ -15,7 +15,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
-import android.util.Log;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -84,7 +83,7 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		super.onPreExecute();
 
 		pDialog = new ProgressDialog(mActivity);
-		dialogMessage = "Retrieving contacts...\n(This may take a minute the first time you launch the app.)";
+		dialogMessage = "Retrieving contacts...\n(This may take a minute the first time you launch the app)";
 		pDialog.setMessage(dialogMessage);
 		pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		pDialog.setCancelable(false);
@@ -127,7 +126,6 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 			return displayList;
 			
 		} catch (IOException e) {
-			Log.e(LoadContactsTask.class.getName(), "IOException in doInBackground: " + e.getMessage());
 			success = false;
 			return new ArrayList<Person>();
 		}
@@ -242,7 +240,7 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		// Go through and find registered devices for all phone numbers in contact list
 		ArrayList<String> phoneList = new ArrayList<String>(phoneMap.keySet());
 		ArrayList<String> emailList = new ArrayList<String>(emailMap.keySet());
-		dialogMessage = "Checking for registered friends...\n(This may take a minute the first time you launch the app.)";
+		dialogMessage = "Checking for registered friends...\n(This may take a minute the first time you launch the app)";
 		pDialog.setMax(phoneList.size() + emailList.size());
 		publishProgress(0);
 		

@@ -57,9 +57,11 @@ public class Constants {
 	
 	public static final int MAP_ZOOM = 25;
 
-	// List of types of nearby places that we want
-	// TODO: change this
-	public static final String TYPES = "cafe|restaurant";
+	// Types of nearby places that we want
+	public static final String TYPES = "casino|food|hospital|museum|park|school|store";
+	
+	// Maximum number of results we can have in the nearby places list
+	public static final int MAXIMUM_NUMBER_PLACES = 60;
 	
 	// Keys for passing the selected Place object between activities using Bundles
 	public static final String SELECTED_PLACE_KEY = "selected_place";

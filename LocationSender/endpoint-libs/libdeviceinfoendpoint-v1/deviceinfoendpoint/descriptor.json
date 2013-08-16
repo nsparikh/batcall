@@ -1,13 +1,13 @@
 {
   "files": [
     {
-      "downloadUrl": "/downloads/deviceinfoendpoint/v1/20130815174354/java/1.15.0-rc/locationsender-deviceinfoendpoint-v1-20130815174354-java-1.15.0-rc-sources.jar", 
-      "path": "locationsender-deviceinfoendpoint-v1-20130815174354-java-1.15.0-rc-sources.jar", 
+      "downloadUrl": "/downloads/deviceinfoendpoint/v1/20130816044315/java/1.15.0-rc/locationsender-deviceinfoendpoint-v1-20130816044315-java-1.15.0-rc-sources.jar", 
+      "path": "locationsender-deviceinfoendpoint-v1-20130816044315-java-1.15.0-rc-sources.jar", 
       "type": "source", 
-      "timestamp": "2013-08-15 17:43"
+      "timestamp": "2013-08-16 04:43"
     }, 
     {
-      "path": "locationsender-deviceinfoendpoint-v1-20130815174354-java-1.15.0-rc.jar.properties", 
+      "path": "locationsender-deviceinfoendpoint-v1-20130816044315-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -698,7 +698,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130815174354, 
+  "revision": 20130816044315, 
   "id": "deviceinfoendpoint:v1", 
   "modulePath": "com/neenaparikh/locationsender"
 }

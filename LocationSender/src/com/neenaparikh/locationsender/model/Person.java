@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import com.neenaparikh.locationsender.util.Constants;
 import com.neenaparikh.locationsender.util.HelperMethods;
@@ -67,7 +66,6 @@ public class Person implements Comparable<Person>, Parcelable {
 			
 			return person;
 		} catch (JSONException e) {
-			Log.e(Person.class.getName(), "JSONException in personFromJsonString: " + e.getMessage());
 			return null;
 		}
 	}
@@ -181,7 +179,7 @@ public class Person implements Comparable<Person>, Parcelable {
 			jsonObject.putOpt(Constants.PERSON_LAST_CONTACTED_KEY, getLastContacted());
 			
 		} catch (JSONException e) {
-			Log.e(Person.class.getName(), "JSONException in toJsonString: " + e.getMessage());
+			return "";
 		}
 		
 		return jsonObject.toString();

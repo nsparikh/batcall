@@ -28,6 +28,10 @@
     <string name="signup_button_text">Sign Up</string>
     <string name="cancel">Cancel</string>
     
+    <string name="default_nearby_list_item_name">Place Name</string>
+    <string name="default_current_address">Current Address</string>
+    <string name="powered_by_google">Powered by Google</string>
+    
     <string name="duration_dialog_prompt">How long will you be here?</string>
     <string name="duration_dialog_confirm_text">Send to..</string>
     <string name="duration_dialog_hour_text">hours</string>
@@ -43,6 +47,12 @@
     
     <string name="delete_account_confirm_title">Delete account?</string>
     <string name="delete_account_confirm_button_text">Delete</string>
+    
+    <string name="notification_response_sent">BatCall notification sent!</string>
+    <string name="sms_response_sent">Text messages sent!</string>
+    <string name="sms_response_no_service">No service - unable to send text message</string>
+    <string name="sms_response_no_sim">No SIM card - unable to send text message</string>
+    <string name="sms_response_failure">Unable to send text message</string>
     
     
    

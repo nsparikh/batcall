@@ -3,12 +3,14 @@ package com.neenaparikh.locationsender.comms;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -26,7 +28,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.neenaparikh.locationsender.DurationSelectorDialog;
-import com.neenaparikh.locationsender.NearbyPlacesActivity;
 import com.neenaparikh.locationsender.R;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.model.PlaceList;
@@ -40,21 +41,27 @@ import com.neenaparikh.locationsender.util.Constants;
  *
  */
 public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>> {
-	private static final String TAG = "LoadPlacesTask";
-	
-	private NearbyPlacesActivity mActivity;
+	private Activity mActivity;
 	private boolean showDialog;
 	private ProgressDialog pDialog;
 
 	private String currentAddress;
 	private Location currentLocation;
+	private ArrayList<Place> nearbyPlaces;
+	private ArrayAdapter<Place> nearbyListViewAdapter;
 	
+	private String nextPageToken;
+	private ArrayList<String> usedPageTokens;
+
 	private HttpTransport httpTransport;
 
-	public LoadPlacesTask(NearbyPlacesActivity activity, boolean showDialog) {
+	public LoadPlacesTask(Activity activity, boolean showDialog) {
 		this.mActivity = activity;
 		this.showDialog = showDialog;
 		this.httpTransport = new NetHttpTransport();
+		this.nearbyPlaces = new ArrayList<Place>();
+		this.nearbyListViewAdapter = new ArrayAdapter<Place>(mActivity, android.R.layout.simple_list_item_1, nearbyPlaces);
+		this.usedPageTokens = new ArrayList<String>();
 	}
 
 	/**
@@ -63,11 +70,47 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		
+
 		pDialog = new ProgressDialog(mActivity);
 		pDialog.setMessage("Updating location...");
 		pDialog.setCancelable(false);
 		if (showDialog) pDialog.show();
+
+		// Bind the list of nearby places to the list view
+		final ListView nearbyListView = (ListView) mActivity.findViewById(R.id.nearby_list_view);
+		nearbyListView.setAdapter(nearbyListViewAdapter);
+
+		// Set on click listener for list view items to launch duration selector
+		nearbyListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				Place selectedPlace = (Place) nearbyListView.getAdapter().getItem(position);
+				DurationSelectorDialog dialog = DurationSelectorDialog.getInstance(selectedPlace);
+				dialog.show(mActivity.getFragmentManager(), "DurationSelectorDialog");
+			}
+		});
+
+		// Set scroll listener to detect whether we have scrolled to the bottom
+		nearbyListView.setOnScrollListener(new OnScrollListener() {
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+				if (totalItemCount >= Constants.MAXIMUM_NUMBER_PLACES) return;
+				
+				if (firstVisibleItem + visibleItemCount >= totalItemCount) {
+					// This means we've hit the bottom, so load more places if possible
+					if (nextPageToken != null && nextPageToken.length() > 0 && !usedPageTokens.contains(nextPageToken)) {
+						new LoadNextPageTask().execute(nextPageToken);
+						usedPageTokens.add(nextPageToken);
+					}
+				}
+			}
+
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				return;
+			}
+		});
 	}
 
 	/**
@@ -88,8 +131,7 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 	protected void onPostExecute(final ArrayList<Place> resultList) {
 		// Dismiss the dialog if it's showing
 		if (pDialog.isShowing()) pDialog.dismiss();
-		
-		
+
 		// Update the UI thread
 		mActivity.runOnUiThread(new Runnable() {
 			public void run() {
@@ -103,7 +145,7 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 				if (currentAddress != null && currentAddress.length() > 0) {
 					TextView currentAddressTextView = (TextView) mActivity.findViewById(R.id.current_address_text_view);
 					currentAddressTextView.setText("Current Location: " + currentAddress);
-					
+
 					// Set click listener to launch duration selector dialog
 					currentAddressTextView.setOnClickListener(new OnClickListener() {
 
@@ -112,30 +154,14 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 							Place currentPlace = new Place("", currentAddress, currentAddress, "", currentLocation);
 							DurationSelectorDialog dialog = DurationSelectorDialog.getInstance(currentPlace);
 							dialog.show(mActivity.getFragmentManager(), "DurationSelectorDialog");
-							
-							// Don't need to keep updating the location once the user chooses a place
-							mActivity.removeLocationUpdates();
 						}
-						
+
 					});
 				}
-
-				// Bind the list of nearby places to the list view
-				final ListView nearbyListView = (ListView) mActivity.findViewById(R.id.nearby_list_view);
-				nearbyListView.setAdapter(new ArrayAdapter<Place>
-					(mActivity, android.R.layout.simple_list_item_1, resultList));
 				
-				// Set on click listener for list view items to launch duration selector
-				nearbyListView.setOnItemClickListener(new OnItemClickListener() {
-
-					@Override
-					public void onItemClick(AdapterView<?> parent, View view,
-							int position, long id) {
-						Place selectedPlace = (Place) nearbyListView.getAdapter().getItem(position);
-						DurationSelectorDialog dialog = DurationSelectorDialog.getInstance(selectedPlace);
-						dialog.show(mActivity.getFragmentManager(), "DurationSelectorDialog");
-					}
-				});
+				// Add results to the list view
+				nearbyPlaces.addAll(resultList);
+				nearbyListViewAdapter.notifyDataSetChanged();
 			}
 		});
 	}
@@ -181,10 +207,10 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 			if(types != null) request.getUrl().put("types", types);
 
 			PlaceList list = request.execute().parseAs(PlaceList.class);
+			nextPageToken = list.getNextPageToken();
 			return list;
 
 		} catch (IOException e) {
-			Log.e("Error:", e.getMessage());
 			return null;
 		}
 
@@ -212,10 +238,53 @@ public class LoadPlacesTask extends AsyncTask<Location, String, ArrayList<Place>
 			if (responseList.getPlaceList().size() > 0) return responseList.getPlaceList().get(0).getAddress();
 
 		} catch (IOException e) {
-			Log.e(TAG, "IOException: " + e.getMessage());
+			return "";
 		}
 
 		return "";
+	}
+
+	private class LoadNextPageTask extends AsyncTask<String, Void, ArrayList<Place>> {
+
+		@Override
+		protected ArrayList<Place> doInBackground(String... params) {
+			String pageToken = params[0];
+			return getNextPage(pageToken).getPlaceList();
+		}
+
+		@Override
+		protected void onPostExecute(ArrayList<Place> resultList) {
+			nearbyPlaces.addAll(resultList);
+			nearbyListViewAdapter.notifyDataSetChanged();
+		}
+
+		/**
+		 * Given a next page token, returns the next set of results.
+		 * @param nextPageToken
+		 * @return
+		 */
+		private PlaceList getNextPage(String pageToken) {
+			// Initialize HTTP request
+			HttpRequestFactory httpRequestFactory = createRequestFactory(httpTransport);
+			HttpRequest request;
+			try {
+				// Send request to Google Places API with location, radius, and place types
+				request = httpRequestFactory.buildGetRequest(new GenericUrl(Constants.PLACES_SEARCH_URL));
+
+				request.getUrl().put("key", Constants.API_KEY);
+				request.getUrl().put("location", 0 + "," + 0); // Will be ignored
+				request.getUrl().put("radius", 0); // Will be ignored
+				request.getUrl().put("sensor", "false"); // Will be ignored
+				request.getUrl().put("pagetoken", pageToken);
+
+				PlaceList list = request.execute().parseAs(PlaceList.class);
+				nextPageToken = list.getNextPageToken();
+				return list;
+
+			} catch (IOException e) {
+				return null;
+			}
+		}
 	}
 
 }

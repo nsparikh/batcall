@@ -8,16 +8,14 @@ import java.util.concurrent.ExecutionException;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.neenaparikh.locationsender.GCMIntentService;
 import com.neenaparikh.locationsender.NearbyPlacesActivity;
+import com.neenaparikh.locationsender.R;
 import com.neenaparikh.locationsender.messageEndpoint.MessageEndpoint;
 import com.neenaparikh.locationsender.messageEndpoint.model.BooleanResult;
 import com.neenaparikh.locationsender.model.Person;
@@ -40,9 +38,9 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 	private Activity activity;
 	private Place place;
 	private Set<String> successfulRecipientIds;
-	private boolean hasTextRecipients = false;
-	private TelephonyManager telephonyManager;
 	private ProgressDialog pDialog;
+	
+	private String smsMessageResponse;
     
 
 	/**
@@ -57,7 +55,6 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		this.activity = activity;
 		this.place = place;
 		this.successfulRecipientIds = new HashSet<String>();
-		this.telephonyManager = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
 	}
 	
 	/**
@@ -94,7 +91,6 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 						else success = false;
 					}
 				} catch (IOException e) {
-					Log.e(SendMessageTask.class.getName(), "IOException: " + e.getMessage());
 					success = false;
 				}
 			} else if (isTextFallbackEnabled && recipient.hasPhones()) {
@@ -105,15 +101,14 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		// Send text message to recipients who are unregistered, if any
 		int numTextRecipients = textMessageRecipients.size();
 		if (numTextRecipients > 0) {
-			hasTextRecipients = true;
 			SendTextMessageTask textTask = new SendTextMessageTask(activity, place);
 			textTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, textMessageRecipients.toArray(new Person[numTextRecipients]));
 			try {
-				textTask.get();
+				smsMessageResponse = textTask.get();
 			} catch (InterruptedException e) {
-				Log.e(SendMessageTask.class.getName(), "InterruptedException: " + e.getMessage());
+				return false;
 			} catch (ExecutionException e) {
-				Log.e(SendMessageTask.class.getName(), "ExecutionException: " + e.getMessage());
+				return false;
 			}
 		}
 		
@@ -136,15 +131,15 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		}
 		editor.commit();
 		
-		// Notify the user if there is no SIM card
-		if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_ABSENT && hasTextRecipients)
-			Toast.makeText(activity, "Need SIM card to send text messages", Toast.LENGTH_SHORT).show();
+		// Display result of sending text messages
+		if (smsMessageResponse != null && smsMessageResponse.length() > 0)
+			Toast.makeText(activity, smsMessageResponse, Toast.LENGTH_SHORT).show();
 
 		// Send was successful
 		if (result) {
 		
 			if (successfulRecipientIds.size() > 0)
-				Toast.makeText(activity, "BatCall notification sent!", Toast.LENGTH_SHORT).show();
+				Toast.makeText(activity, activity.getString(R.string.notification_response_sent), Toast.LENGTH_SHORT).show();
 			
 			// Launch back to NearbyPlacesActivity then close this activity
 			Intent intent = new Intent(activity, NearbyPlacesActivity.class);

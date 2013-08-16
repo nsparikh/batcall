@@ -1,16 +1,13 @@
 package com.neenaparikh.locationsender;
 
-import com.google.api.client.googleapis.json.GoogleJsonError;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import java.io.IOException;
+
+import android.app.Activity;
+import android.widget.Toast;
+
 import com.google.api.client.googleapis.services.AbstractGoogleClient;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
-
-import android.app.Activity;
-import android.util.Log;
-import android.widget.Toast;
-
-import java.io.IOException;
 
 /**
  * Common utilities for working with Cloud Endpoints.
@@ -52,41 +49,6 @@ public class CloudEndpointUtils {
     });
 
     return builder;
-  }
-
-  /**
-   * Logs the given message and shows an error alert dialog with it.
-   * 
-   * @param activity Activity
-   * @param tag Log tag to use
-   * @param message Message to log and show or {@code null} for none
-   */
-  public static void logAndShow(Activity activity, String tag, String message) {
-    Log.e(tag, message);
-    showError(activity, message);
-  }
-
-  /**
-   * Logs the given throwable and shows an error alert dialog with its
-   * message.
-   * 
-   * @param activity Activity
-   * @param tag Log tag to use
-   * @param t Throwable to log and show
-   */
-  public static void logAndShow(Activity activity, String tag, Throwable t) {
-    Log.e(tag, "Error", t);
-    String message = t.getMessage();
-    // Exceptions that occur in your Cloud Endpoint implementation classes
-    // are wrapped as GoogleJsonResponseExceptions
-    if (t instanceof GoogleJsonResponseException) {
-      GoogleJsonError details = ((GoogleJsonResponseException) t)
-          .getDetails();
-      if (details != null) {
-        message = details.getMessage();
-      }
-    }
-    showError(activity, message);
   }
 
   /**

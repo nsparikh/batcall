@@ -9,8 +9,8 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
+import com.neenaparikh.locationsender.R;
 import com.neenaparikh.locationsender.model.Person;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.Constants;
@@ -26,15 +26,15 @@ import com.neenaparikh.locationsender.util.HelperMethods;
  * @author neenaparikh
  *
  */
-public class SendTextMessageTask extends AsyncTask<Person, Person, Boolean> {
+public class SendTextMessageTask extends AsyncTask<Person, Person, String> {
 	private Activity activity;
 	private boolean isTextFallbackEnabled;
 	private SmsManager smsManager;
 	private TelephonyManager telephonyManager;
 	private String notificationMessage;
-	
+
 	private Object mLock = new Object();
-    
+
 
 	/**
 	 * Default constructor. Takes in the Place object.
@@ -54,10 +54,10 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, Boolean> {
 	 * Sends the message. Takes in a list of Person objects.
 	 */
 	@Override
-	protected Boolean doInBackground(Person... params) {
-		if (telephonyManager.getSimState() != TelephonyManager.SIM_STATE_ABSENT) return false;
-		
-		boolean success = true;
+	protected String doInBackground(Person... params) {
+		if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_ABSENT) {
+			return activity.getString(R.string.sms_response_no_sim);
+		}
 
 		// Iterate through each person and send the message individually
 		for (Person recipient : params) {
@@ -71,16 +71,15 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, Boolean> {
 					try {
 						synchronized(mLock) { mLock.wait(); }
 					} catch (InterruptedException e) {
-						Log.e(SendMessageTask.class.getName(), "InterruptedException: " + e.getMessage());
-						success = false;
+						return activity.getString(R.string.sms_response_failure);
 					}
 				}	
 			}
 		}
-
-		return success;
+		
+		return activity.getString(R.string.sms_response_sent);
 	}
-	
+
 	/**
 	 * A way of accessing the UI thread in order to prompt the user for input.
 	 * If a selected recipient has multiple phone numbers, prompt the user to choose
@@ -89,7 +88,7 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, Boolean> {
 	@Override
 	protected void onProgressUpdate(Person... progress) {
 		final Person recipient = progress[0];
-		
+
 		// Show dialog prompting user to select a phone number to send it to
 		activity.runOnUiThread(new Runnable() {
 			public void run() {
@@ -113,13 +112,13 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, Boolean> {
 
 	}
 
-	
+
 	/**
 	 * Sends the text message to the given phone number.
 	 * @param phone the phone number to which to send the text message
 	 * @param message the message to send
 	 */
-	private void sendTextMessage(String phone, String message) {
+	private void sendTextMessage(String phone, String message) {   
 		smsManager.sendTextMessage(phone, null, message, null, null);
 	}
 }

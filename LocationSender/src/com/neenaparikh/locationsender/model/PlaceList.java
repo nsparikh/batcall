@@ -12,6 +12,9 @@ public class PlaceList implements Parcelable {
 	@Key("results")
 	private ArrayList<Place> places;
 	
+	@Key("next_page_token")
+	private String nextPageToken;
+	
 	/**
 	 * Empty constructor creates an empty list of places
 	 */
@@ -38,6 +41,10 @@ public class PlaceList implements Parcelable {
 	 */
 	public ArrayList<Place> getPlaceList() {
 		return this.places;
+	}
+
+	public String getNextPageToken() {
+		return nextPageToken;
 	}
 
 	/**

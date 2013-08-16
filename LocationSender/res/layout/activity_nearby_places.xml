@@ -1,18 +1,38 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <TextView android:id="@+id/current_address_text_view"
+    <TextView
+        android:id="@+id/current_address_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
         android:background="@drawable/blue_bottom_border_selector"
-        android:textSize="18sp" />
-    
-    <ListView android:id="@+id/nearby_list_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:padding="8dp"
+        android:textSize="18sp"
+        android:text="@string/default_current_address" />
 
-</LinearLayout>
+    <ListView
+        android:id="@+id/nearby_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/current_address_text_view" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/blue_top_border"
+        android:padding="8dp" >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:contentDescription="@string/powered_by_google"
+            android:src="@drawable/powered_by_google" />
+        
+    </RelativeLayout>
+
+</RelativeLayout>
