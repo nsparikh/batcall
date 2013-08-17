@@ -1,13 +1,13 @@
 {
   "files": [
     {
-      "downloadUrl": "/downloads/messageEndpoint/v1/20130817043255/java/1.15.0-rc/locationsender-messageEndpoint-v1-20130817043255-java-1.15.0-rc-sources.jar", 
-      "path": "locationsender-messageEndpoint-v1-20130817043255-java-1.15.0-rc-sources.jar", 
+      "downloadUrl": "/downloads/messageEndpoint/v1/20130817061740/java/1.15.0-rc/locationsender-messageEndpoint-v1-20130817061740-java-1.15.0-rc-sources.jar", 
+      "path": "locationsender-messageEndpoint-v1-20130817061740-java-1.15.0-rc-sources.jar", 
       "type": "source", 
-      "timestamp": "2013-08-17 04:32"
+      "timestamp": "2013-08-17 06:17"
     }, 
     {
-      "path": "locationsender-messageEndpoint-v1-20130817043255-java-1.15.0-rc.jar.properties", 
+      "path": "locationsender-messageEndpoint-v1-20130817061740-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -698,7 +698,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130817043255, 
+  "revision": 20130817061740, 
   "id": "messageEndpoint:v1", 
   "modulePath": "com/neenaparikh/locationsender"
 }

@@ -12,6 +12,8 @@ public class Constants {
 	public static final String SHARED_PREFERENCES_ACCOUNT_NAME_KEY = "saved_account_name";
 	public static final String SHARED_PREFERENCES_TEXT_ENABLED_KEY = "text_message_fallback_enabled";
 	public static final String SHARED_PREFERENCES_SAVED_CONTACTS_KEY = "saved_contact_list";
+	public static final String SHARED_PREFERENCES_CONTACT_EMAIL_PREFIX = "contact_email_";
+	public static final String SHARED_PREFERENCES_CONTACT_PHONE_PREFIX = "contact_phone_";
 	
 	// Crediential info
 	public static final int REQUEST_ACCOUNT_PICKER = 2;

@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/MOPuOodqfW672wrmdz5wjjDgbKA\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/yIYKDGL9GI9A1PO73E6QNZyhXok\"",
  "discoveryVersion": "v1",
  "id": "deviceinfoendpoint:v1",
  "name": "deviceinfoendpoint",
@@ -116,6 +116,42 @@
   }
  },
  "methods": {
+  "findDeviceByPhone": {
+   "id": "deviceinfoendpoint.findDeviceByPhone",
+   "path": "findDeviceByPhone/{phone}",
+   "httpMethod": "POST",
+   "parameters": {
+    "phone": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "phone"
+   ],
+   "response": {
+    "$ref": "DeviceInfo"
+   }
+  },
+  "findDevicesByEmail": {
+   "id": "deviceinfoendpoint.findDevicesByEmail",
+   "path": "findDevicesByEmail/{email}",
+   "httpMethod": "POST",
+   "parameters": {
+    "email": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "email"
+   ],
+   "response": {
+    "$ref": "CollectionResponse_DeviceInfo"
+   }
+  },
   "findDevicesByEmailList": {
    "id": "deviceinfoendpoint.findDevicesByEmailList",
    "path": "findDevicesByEmailList/{emailListString}",

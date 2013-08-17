@@ -110,6 +110,44 @@ public class DeviceInfoEndpoint {
 	}
 	
 	/**
+	 * Finds the device with the given phone number
+	 * @param phone the given phone number
+	 * @return a DeviceInfo object with the phone number and associated ID, or null if there is none
+	 */
+	@ApiMethod(name = "findDeviceByPhone")
+	public DeviceInfo findDeviceByPhone(User user, @Named("phone") String phone) 
+			throws OAuthRequestException {
+		if (user == null) {
+			throw new OAuthRequestException("User is not authenticated");
+		}
+		
+		if (phone == null || phone.length() == 0) return null;
+		
+		List<DeviceInfo> resultList = new ArrayList<DeviceInfo>();
+		EntityManager  mgr = getEntityManager();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		try {
+			// Create filter on phone number and prepare query 
+			Filter phoneFilter = new FilterPredicate("phoneNumber", FilterOperator.EQUAL, phone);
+			PreparedQuery preparedQuery = datastore.prepare(new Query("DeviceInfo").setFilter(phoneFilter).setKeysOnly());
+			Entity result = preparedQuery.asSingleEntity();
+			if (result != null) {
+				// If we've found a match, create a filler DeviceInfo object to hold the ID and phone number
+				DeviceInfo matchedPhoneDevice = new DeviceInfo();
+				matchedPhoneDevice.setPhoneNumber(phone);
+				matchedPhoneDevice.setDeviceRegistrationID(result.getKey().getName());
+				resultList.add(matchedPhoneDevice);
+			}
+		} finally {
+			mgr.close();
+		}
+		
+
+		if (resultList.size() == 0) return null;
+		return resultList.get(0);
+	}
+	
+	/**
 	 * Finds the devices with the given email addresses.
 	 * @param user the authenticated user
 	 * @param emailListString The given email addresses in a single string, separated by commas
@@ -136,8 +174,8 @@ public class DeviceInfoEndpoint {
 			// Iterate through each email address and query the datastore individually
 			for (String email : emails) {
 				// Create filter on email address and prepare query 
-				Filter phoneFilter = new FilterPredicate("userEmail", FilterOperator.EQUAL, email);
-				PreparedQuery preparedQuery = datastore.prepare(new Query("DeviceInfo").setFilter(phoneFilter).setKeysOnly());
+				Filter emailFilter = new FilterPredicate("userEmail", FilterOperator.EQUAL, email);
+				PreparedQuery preparedQuery = datastore.prepare(new Query("DeviceInfo").setFilter(emailFilter).setKeysOnly());
 				List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withLimit(5));
 				if (result != null && result.size() > 0) {
 					for (Entity e : result) {
@@ -152,6 +190,46 @@ public class DeviceInfoEndpoint {
 		} finally {
 			mgr.close();
 		}
+
+		if (resultList.size() == 0) return null;
+		return CollectionResponse.<DeviceInfo> builder().setItems(resultList).build();
+	}
+	
+	/**
+	 * Finds the devices with the given email address
+	 * @param phone the given email address
+	 * @return a list of DeviceInfo objects with the email address and associated IDs, or null if there is none
+	 */
+	@ApiMethod(name = "findDevicesByEmail")
+	public CollectionResponse<DeviceInfo> findDevicesByEmail(User user, @Named("email") String email) 
+			throws OAuthRequestException {
+		if (user == null) {
+			throw new OAuthRequestException("User is not authenticated");
+		}
+		
+		if (email == null || email.length() == 0) return null;
+		
+		List<DeviceInfo> resultList = new ArrayList<DeviceInfo>();
+		EntityManager  mgr = getEntityManager();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		try {
+			// Create filter on email address and prepare query 
+			Filter emailFilter = new FilterPredicate("userEmail", FilterOperator.EQUAL, email);
+			PreparedQuery preparedQuery = datastore.prepare(new Query("DeviceInfo").setFilter(emailFilter).setKeysOnly());
+			List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withLimit(5));
+			if (result != null && result.size() > 0) {
+				for (Entity e : result) {
+					// If we've found a match, create a filler DeviceInfo object to hold the ID and email
+					DeviceInfo matchedEmailDevice = new DeviceInfo();
+					matchedEmailDevice.setUserEmail(email);
+					matchedEmailDevice.setDeviceRegistrationID(e.getKey().getName());
+					resultList.add(matchedEmailDevice);
+				}
+			}
+		} finally {
+			mgr.close();
+		}
+		
 
 		if (resultList.size() == 0) return null;
 		return CollectionResponse.<DeviceInfo> builder().setItems(resultList).build();

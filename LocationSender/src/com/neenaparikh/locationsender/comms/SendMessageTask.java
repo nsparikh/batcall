@@ -96,6 +96,8 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 			} else if (isTextFallbackEnabled && recipient.hasPhones()) {
 				textMessageRecipients.add(recipient);
 			}
+			// TODO: change so we check for registered phones/emails now, then save to shared prefs
+			//	rather than doing all the checking in LoadContactsTask
 		}
 		
 		// Send text message to recipients who are unregistered, if any

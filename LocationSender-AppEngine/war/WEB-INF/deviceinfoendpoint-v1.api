@@ -102,6 +102,46 @@
         "body" : "autoTemplate(backendResponse)"
       }
     },
+    "deviceinfoendpoint.findDeviceByPhone" : {
+      "path" : "findDeviceByPhone/{phone}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
+      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066-bnjprcsgqnma91angd05n0ijfq9nvj5t.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByPhone",
+      "request" : {
+        "parameters" : {
+          "phone" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "deviceinfoendpoint.findDevicesByEmail" : {
+      "path" : "findDevicesByEmail/{email}",
+      "httpMethod" : "POST",
+      "scopes" : [ ],
+      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
+      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066-bnjprcsgqnma91angd05n0ijfq9nvj5t.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByEmail",
+      "request" : {
+        "parameters" : {
+          "email" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
     "deviceinfoendpoint.updateDeviceInfo" : {
       "path" : "deviceinfo",
       "httpMethod" : "PUT",
@@ -210,6 +250,16 @@
         }
       },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByPhoneList" : {
+        "response" : {
+          "$ref" : "CollectionResponse_DeviceInfo"
+        }
+      },
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByPhone" : {
+        "response" : {
+          "$ref" : "DeviceInfo"
+        }
+      },
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByEmail" : {
         "response" : {
           "$ref" : "CollectionResponse_DeviceInfo"
         }

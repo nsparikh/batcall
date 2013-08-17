@@ -313,6 +313,8 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 				Person p = Person.personFromJsonString(personString);
 				if (p != null) {
 					personList.add(p);
+					ArrayList<String> regIds = checkPersonRegistration(p);
+					if (regIds != null) p.setDeviceRegistrationIdList(regIds);
 					
 					// Check in shared prefs for device IDs to get last contact time
 					for (String deviceId : p.getDeviceRegistrationIdList()) {
@@ -326,6 +328,28 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		}
 	}
 
+	/**
+	 * Given a Person object, checks in Shared Preferences for any emails or phones
+	 * that have associated registration IDs and returns them
+	 */
+	private ArrayList<String> checkPersonRegistration(Person person) {
+		ArrayList<String> regIds = new ArrayList<String>();
+		
+		// First check phones
+		for (String phone : person.getPhones()) {
+			String regId = sharedPrefs.getString(Constants.SHARED_PREFERENCES_CONTACT_PHONE_PREFIX + phone, null);
+			if (regId != null) regIds.add(regId);
+		}
+		
+		// Next check emails
+		for (String email : person.getEmails()) {
+			String regId = sharedPrefs.getString(Constants.SHARED_PREFERENCES_CONTACT_EMAIL_PREFIX + email, null);
+			if (regId != null) regIds.add(regId);
+		}
+		
+		if (regIds.size() == 0) return null;
+		return regIds;
+	}
 	
 	/**
 	 * Saves the given list of person objects to the shared prefs

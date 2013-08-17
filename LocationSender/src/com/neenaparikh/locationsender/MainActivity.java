@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
 
 	private Button retryButton;
 	private Button signupButton;
+	private ProgressSpinner progressSpinner;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +55,7 @@ public class MainActivity extends Activity {
 	 * Called when the user has successfully authenticated / signed in.
 	 */
 	private void onSignIn() {
+		progressSpinner = ProgressSpinner.show(this, null, null, true, false);
 		signupButton.setVisibility(View.GONE);
 
 		// Register the device
@@ -107,6 +109,12 @@ public class MainActivity extends Activity {
 
 		// First determine whether the intent came from GCMIntentService 
 		if (intent.getBooleanExtra(Constants.GCM_INTENT_SERVICE_KEY, false)) {
+			
+			// Hide progress dialog
+			if (progressSpinner != null) {
+				progressSpinner.cancel();
+				progressSpinner = null;
+			}
 
 			if (intent.getBooleanExtra(Constants.REGISTER_INTENT_SUCCESS_KEY, false)) {
 				// If registration was successful, start NearbyPlacesActivity
