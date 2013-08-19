@@ -3,7 +3,11 @@ package com.neenaparikh.locationsender;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,7 +25,7 @@ public class ContactsActivity extends Activity {
 	private RelativeLayout sendButtonContainer;
 	private TextView selectedPeopleNamesView;
 	private Place selectedPlace;
-	boolean firstTimeFlag = false;
+	boolean firstTimeFlag = false; // So that contacts are not refreshed every time activity is resumed
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +41,31 @@ public class ContactsActivity extends Activity {
 		selectedPlace = getIntent().getParcelableExtra(Constants.SELECTED_PLACE_KEY);
 		
 		firstTimeFlag = true;
+		
+		// If the user hasn't selected text message fallback option (ie if this is the first time using the app),
+		//	display a prompt asking for the user's preference
+		final SharedPreferences sharedPrefs = getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
+		if (!sharedPrefs.contains(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY)) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(getString(R.string.settings_text_checkbox_title));
+			builder.setMessage(getString(R.string.text_message_fallback_prompt));
+			builder.setPositiveButton(getString(R.string.yes), new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					SharedPreferences.Editor editor = sharedPrefs.edit();
+					editor.putBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, true);
+					editor.commit();
+				}
+			});
+			builder.setNegativeButton(getString(R.string.no), new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					SharedPreferences.Editor editor = sharedPrefs.edit();
+					editor.putBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, false);
+					editor.commit();
+				}
+			});
+		}
 	}
 
 	@Override

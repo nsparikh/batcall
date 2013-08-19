@@ -3,7 +3,6 @@ package com.neenaparikh.locationsender.comms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -20,11 +19,7 @@ import android.widget.Toast;
 
 import com.neenaparikh.locationsender.ContactsActivity;
 import com.neenaparikh.locationsender.ContactsArrayAdapter;
-import com.neenaparikh.locationsender.GCMIntentService;
 import com.neenaparikh.locationsender.R;
-import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
-import com.neenaparikh.locationsender.deviceinfoendpoint.model.CollectionResponseDeviceInfo;
-import com.neenaparikh.locationsender.deviceinfoendpoint.model.DeviceInfo;
 import com.neenaparikh.locationsender.model.Person;
 import com.neenaparikh.locationsender.util.Constants;
 import com.neenaparikh.locationsender.util.HelperMethods;
@@ -61,17 +56,12 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 	private String dialogMessage;
 	private boolean success;
 	
-	private Deviceinfoendpoint endpoint;
 	private SharedPreferences sharedPrefs;
-	private boolean isTextFallbackEnabled; // if not, only display contacts who are registered
 	
 
 
 	public LoadContactsTask(ContactsActivity activity) {
 		mActivity = activity;
-		endpoint = GCMIntentService.getAuthDeviceInfoEndpoint(activity);
-		isTextFallbackEnabled = mActivity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)
-				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, true);
 		sharedPrefs = mActivity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
 	}
 
@@ -115,12 +105,10 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 			if (refresh) allContacts = getAllContacts();
 			else allContacts = getSavedContacts();
 			
-			// If text message fallback is enabled, show all contacts who are registered
-			// 	and those with phone numbers. Otherwise, only show those who are registered.
+			// Show all contacts who are registered and those with phone numbers.
 			ArrayList<Person> displayList = new ArrayList<Person>();
 			for (Person p : allContacts) {
-				if (p.isRegistered()) displayList.add(p);
-				else if (isTextFallbackEnabled && p.hasPhones()) displayList.add(p);
+				if (p.hasPhones() || personIsRegistered(p)) displayList.add(p);
 			}
 			success = true;
 			return displayList;
@@ -167,9 +155,6 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 	private ArrayList<Person> getAllContacts() throws IOException {
 		ArrayList<Person> contacts = new ArrayList<Person>();
 		
-		HashMap<String, Person> phoneMap = new HashMap<String, Person>();
-		HashMap<String, Person> emailMap = new HashMap<String, Person>();
-		
 		// Initialize cursor for contacts 
 		ContentResolver contentResolver = mActivity.getContentResolver();
 		Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI,
@@ -210,7 +195,6 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 						ContactsContract.CommonDataKinds.Phone.NUMBER));
 				String flattenedPhone = HelperMethods.flattenPhone(phone);
 				phoneNumbers.add(flattenedPhone);
-				phoneMap.put(flattenedPhone, currentPerson);
 			}
 			phoneCursor.close();
 			currentPerson.setPhones(phoneNumbers);
@@ -225,7 +209,6 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 						emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS));
 				String flattenedEmail = email.trim().toLowerCase(Locale.getDefault());
 				emailAddresses.add(flattenedEmail);
-				emailMap.put(flattenedEmail, currentPerson);
 			}
 			emailCursor.close();
 			currentPerson.setEmails(emailAddresses);
@@ -237,51 +220,7 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		cursor.close();
 		
 
-		// Go through and find registered devices for all phone numbers in contact list
-		ArrayList<String> phoneList = new ArrayList<String>(phoneMap.keySet());
-		ArrayList<String> emailList = new ArrayList<String>(emailMap.keySet());
-		dialogMessage = "Checking for registered friends...\n(This may take a minute the first time you launch the app)";
-		pDialog.setMax(phoneList.size() + emailList.size());
-		publishProgress(0);
 		
-		// TODO: clean up this code!
-		// Check against all phones for registered phone numbers
-		for (int i = 0; i < phoneList.size(); i+=20) {
-			publishProgress(i);
-			String phoneListString = HelperMethods.stringListToString(
-					phoneList.subList(i, Math.min(i+20, phoneList.size())));
-			CollectionResponseDeviceInfo matchedPhoneDevices = endpoint.findDevicesByPhoneList(phoneListString).execute();
-			if (matchedPhoneDevices != null && matchedPhoneDevices.getItems() != null) {
-				for (DeviceInfo matchedPhoneDevice : matchedPhoneDevices.getItems()) {
-					String matchedPhone = matchedPhoneDevice.getPhoneNumber();
-					String deviceId = matchedPhoneDevice.getDeviceRegistrationID();
-					Person p = phoneMap.get(matchedPhone);
-					p.addDeviceRegistrationId(deviceId);
-					
-					// Check for last contact time of this deviceId
-					p.setLastContacted(sharedPrefs.getLong(deviceId, p.getLastContacted()));
-				}
-			}
-		}
-		
-		// Check against all emails for registered email addresses
-		for (int i = 0; i < emailList.size(); i+=20) {
-			publishProgress(i + phoneList.size());
-			String emailListString = HelperMethods.stringListToString(
-					emailList.subList(i, Math.min(i+20, emailList.size())));
-			CollectionResponseDeviceInfo matchedEmailDevices = endpoint.findDevicesByEmailList(emailListString).execute();
-			if (matchedEmailDevices != null && matchedEmailDevices.getItems() != null) {
-				for (DeviceInfo matchedEmailDevice : matchedEmailDevices.getItems()) {
-					String matchedEmail = matchedEmailDevice.getUserEmail(); 
-					String deviceId = matchedEmailDevice.getDeviceRegistrationID();
-					Person p = emailMap.get(matchedEmail);
-					p.addDeviceRegistrationId(deviceId);
-					
-					// Check for last contact time of this deviceId
-					p.setLastContacted(sharedPrefs.getLong(deviceId, p.getLastContacted()));
-				}
-			}	
-		}
 
 		// Save contacts to shared prefs
 		savePersonList(contacts);
@@ -311,44 +250,11 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 			for (String personString : savedPersonStrings) {
 				publishProgress(count);
 				Person p = Person.personFromJsonString(personString);
-				if (p != null) {
-					personList.add(p);
-					ArrayList<String> regIds = checkPersonRegistration(p);
-					if (regIds != null) p.setDeviceRegistrationIdList(regIds);
-					
-					// Check in shared prefs for device IDs to get last contact time
-					for (String deviceId : p.getDeviceRegistrationIdList()) {
-						long lastContacted = p.getLastContacted();
-						p.setLastContacted(sharedPrefs.getLong(deviceId, lastContacted));
-					}
-				}
+				if (p != null) personList.add(p);
 			}
 			Collections.sort(personList);
 			return personList;
 		}
-	}
-
-	/**
-	 * Given a Person object, checks in Shared Preferences for any emails or phones
-	 * that have associated registration IDs and returns them
-	 */
-	private ArrayList<String> checkPersonRegistration(Person person) {
-		ArrayList<String> regIds = new ArrayList<String>();
-		
-		// First check phones
-		for (String phone : person.getPhones()) {
-			String regId = sharedPrefs.getString(Constants.SHARED_PREFERENCES_CONTACT_PHONE_PREFIX + phone, null);
-			if (regId != null) regIds.add(regId);
-		}
-		
-		// Next check emails
-		for (String email : person.getEmails()) {
-			String regId = sharedPrefs.getString(Constants.SHARED_PREFERENCES_CONTACT_EMAIL_PREFIX + email, null);
-			if (regId != null) regIds.add(regId);
-		}
-		
-		if (regIds.size() == 0) return null;
-		return regIds;
 	}
 	
 	/**
@@ -360,6 +266,26 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		editor.putStringSet(Constants.SHARED_PREFERENCES_SAVED_CONTACTS_KEY, new HashSet<String>(personStrings));
 		editor.commit();
+	}
+	
+	/**
+	 * Checks to see if any of the given person's phones or emails have any associated
+	 * registration IDs saved in SharedPrefs
+	 */
+	private boolean personIsRegistered(Person person) {
+		// First check phones
+		for (String phone : person.getPhones()) {
+			if (sharedPrefs.getString(Constants.SHARED_PREFERENCES_CONTACT_PHONE_PREFIX + phone, null) != null) 
+				return true;
+		}
+		
+		// Next check emails
+		for (String email : person.getEmails()) {
+			if (sharedPrefs.getStringSet(Constants.SHARED_PREFERENCES_CONTACT_EMAIL_PREFIX + email, null) != null) 
+				return true;
+		}
+		
+		return false;
 	}
 }
 

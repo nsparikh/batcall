@@ -50,8 +50,7 @@ public class ContactsArrayAdapter extends ArrayAdapter<Person> {
 		final Person currentPerson = personList.get(position);
 
 		// Inflate the row item 
-		if (currentPerson.isRegistered()) currentRowItem = mInflater.inflate(R.layout.contact_list_item, null);
-		else currentRowItem = mInflater.inflate(R.layout.contact_list_item_with_subheading, null);
+		currentRowItem = mInflater.inflate(R.layout.contact_list_item, null);
 
 		// Set name
 		TextView nameTextView = (TextView) currentRowItem.findViewById(R.id.contact_list_item_name);

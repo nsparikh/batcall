@@ -11,7 +11,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.neenaparikh.locationsender.util.Constants;
-import com.neenaparikh.locationsender.util.HelperMethods;
 
 /**
  * Represents a user of the application. (Not called "User" in order to avoid
@@ -25,7 +24,6 @@ public class Person implements Comparable<Person>, Parcelable {
 	private ArrayList<String> emails;
 	private ArrayList<String> phones;
 	private Uri photoUri;
-	private ArrayList<String> deviceRegistrationIdList; // The person's associated GCM registration IDs
 	private long lastContacted; // Denotes the timestamp of when this Person was last contacted using the app
 	
 	public Person() {
@@ -33,7 +31,6 @@ public class Person implements Comparable<Person>, Parcelable {
 		this.emails = new ArrayList<String>();
 		this.phones = new ArrayList<String>();
 		this.photoUri = Uri.EMPTY;
-		this.deviceRegistrationIdList = new ArrayList<String>();
 		this.lastContacted = Long.valueOf(0);
 	}
 	
@@ -57,10 +54,6 @@ public class Person implements Comparable<Person>, Parcelable {
 				person.setPhones(new ArrayList<String>(Arrays.asList(phonesString.split(" "))));
 			
 			person.setPhotoUri(Uri.parse(jsonObject.getString(Constants.PERSON_PHOTO_URI_KEY)));
-			
-			String deviceIdString = jsonObject.getString(Constants.PERSON_DEVICE_ID_LIST_KEY);
-			if (deviceIdString != null && deviceIdString.length() > 0)
-				person.setDeviceRegistrationIdList(new ArrayList<String>(Arrays.asList(deviceIdString.split(" "))));
 			
 			person.setLastContacted(Long.valueOf(jsonObject.getString(Constants.PERSON_LAST_CONTACTED_KEY)));
 			
@@ -105,19 +98,6 @@ public class Person implements Comparable<Person>, Parcelable {
 		this.photoUri = photoUri;
 		if (photoUri == null) this.photoUri = Uri.EMPTY;
 	}
-
-	public ArrayList<String> getDeviceRegistrationIdList() {
-		return deviceRegistrationIdList;
-	}
-
-	public void addDeviceRegistrationId(String deviceRegistrationId) {
-		getDeviceRegistrationIdList().add(deviceRegistrationId);
-	}
-	
-	public void setDeviceRegistrationIdList(ArrayList<String> deviceRegistrationIdList) {
-		this.deviceRegistrationIdList = deviceRegistrationIdList;
-		if (deviceRegistrationIdList == null) this.deviceRegistrationIdList = new ArrayList<String>();
-	}
 	
 	public long getLastContacted() {
 		return lastContacted;
@@ -125,10 +105,6 @@ public class Person implements Comparable<Person>, Parcelable {
 
 	public void setLastContacted(long lastContacted) {
 		this.lastContacted = lastContacted;
-	}
-	
-	public boolean isRegistered() {
-		return (getDeviceRegistrationIdList().size() > 0);
 	}
 	
 	public boolean hasPhones() {
@@ -149,7 +125,6 @@ public class Person implements Comparable<Person>, Parcelable {
 		return "Name: " + getName() + 
 				"\nEmails: " + emailsString + 
 				"\nPhones: " + phonesString + 
-				"\nRegistered Devices: " + HelperMethods.stringListToString(getDeviceRegistrationIdList()) +
 				"\nLast contacted: " + getLastContacted();
 	}
 	
@@ -171,10 +146,6 @@ public class Person implements Comparable<Person>, Parcelable {
 			jsonObject.putOpt(Constants.PERSON_PHONES_KEY, phoneString);
 			
 			jsonObject.putOpt(Constants.PERSON_PHOTO_URI_KEY, getPhotoUri().toString());
-			
-			String deviceIdString = "";
-			for (String deviceId : getDeviceRegistrationIdList()) deviceIdString += deviceId + " ";
-			jsonObject.putOpt(Constants.PERSON_DEVICE_ID_LIST_KEY, deviceIdString);
 			
 			jsonObject.putOpt(Constants.PERSON_LAST_CONTACTED_KEY, getLastContacted());
 			

@@ -6,11 +6,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 
-import com.neenaparikh.locationsender.R;
 import com.neenaparikh.locationsender.model.Person;
 import com.neenaparikh.locationsender.model.Place;
 import com.neenaparikh.locationsender.util.Constants;
@@ -26,8 +26,9 @@ import com.neenaparikh.locationsender.util.HelperMethods;
  * @author neenaparikh
  *
  */
-public class SendTextMessageTask extends AsyncTask<Person, Person, String> {
+public class SendTextMessageTask extends AsyncTask<Person, Person, Boolean> {
 	private Activity activity;
+	private SharedPreferences sharedPrefs;
 	private boolean isTextFallbackEnabled;
 	private SmsManager smsManager;
 	private TelephonyManager telephonyManager;
@@ -43,8 +44,8 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, String> {
 	 */
 	public SendTextMessageTask(Activity activity, Place place) {
 		this.activity = activity;
-		this.isTextFallbackEnabled = activity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)
-				.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, true);
+		this.sharedPrefs = activity.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
+		this.isTextFallbackEnabled = sharedPrefs.getBoolean(Constants.SHARED_PREFERENCES_TEXT_ENABLED_KEY, true);
 		this.smsManager = SmsManager.getDefault();
 		this.telephonyManager = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
 		this.notificationMessage = HelperMethods.formatTextMessage(place);
@@ -54,9 +55,9 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, String> {
 	 * Sends the message. Takes in a list of Person objects.
 	 */
 	@Override
-	protected String doInBackground(Person... params) {
+	protected Boolean doInBackground(Person... params) {
 		if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_ABSENT) {
-			return activity.getString(R.string.sms_response_no_sim);
+			return false;
 		}
 
 		// Iterate through each person and send the message individually
@@ -71,13 +72,13 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, String> {
 					try {
 						synchronized(mLock) { mLock.wait(); }
 					} catch (InterruptedException e) {
-						return activity.getString(R.string.sms_response_failure);
+						return false;
 					}
 				}	
 			}
 		}
 		
-		return activity.getString(R.string.sms_response_sent);
+		return true;
 	}
 
 	/**
@@ -120,5 +121,10 @@ public class SendTextMessageTask extends AsyncTask<Person, Person, String> {
 	 */
 	private void sendTextMessage(String phone, String message) {   
 		smsManager.sendTextMessage(phone, null, message, null, null);
+		
+		// Update last contact time in shared prefs
+		SharedPreferences.Editor editor = sharedPrefs.edit();
+		editor.putLong(Constants.SHARED_PREFERENCES_LAST_CONTACTED_PREFIX + phone, System.currentTimeMillis());
+		editor.commit();
 	}
 }
