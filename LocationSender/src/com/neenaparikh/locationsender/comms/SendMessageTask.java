@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.neenaparikh.locationsender.GCMIntentService;
 import com.neenaparikh.locationsender.NearbyPlacesActivity;
 import com.neenaparikh.locationsender.R;
+import com.neenaparikh.locationsender.comms.SendMessageTask.MessageResult;
 import com.neenaparikh.locationsender.deviceinfoendpoint.Deviceinfoendpoint;
 import com.neenaparikh.locationsender.deviceinfoendpoint.model.CollectionResponseDeviceInfo;
 import com.neenaparikh.locationsender.deviceinfoendpoint.model.DeviceInfo;
@@ -36,12 +37,11 @@ import com.neenaparikh.locationsender.util.Constants;
  * @author neenaparikh
  *
  */
-public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
+public class SendMessageTask extends AsyncTask<Person, Void, MessageResult> {
 	private Activity activity; // the calling activity
 	private Place place; // the place that the user selected to send
 	private boolean isTextFallbackEnabled; // whether the user has enabled text fallback
 	private ArrayList<Person> unsuccessfulRecipients; // a list of unsuccessful recipients
-	private boolean smsMessageResult; // the result from SendTextMessageTask
 	private ProgressDialog pDialog; // the progress dialog
 	private SharedPreferences sharedPrefs; // the Shared Preferences, for easy access
 	
@@ -83,8 +83,8 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 	 * Sends the message. Takes in a list of Person objects.
 	 */
 	@Override
-	protected Boolean doInBackground(Person... params) {
-		boolean success = true;
+	protected MessageResult doInBackground(Person... params) {
+		MessageResult messageResult = MessageResult.SUCCESS;
 		ArrayList<Person> textMessageRecipients = new ArrayList<Person>();
 		
 		// Iterate through each person and send the message individually
@@ -98,33 +98,40 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 					for (String deviceId : regIds) {
 						BooleanResult result = messageEndpoint.sendMessage(place.getName(), place.getLatitude(), place.getLongitude(), 
 								place.getDuration(), deviceId).execute();
-						if (!result.getResult()) successfulRecipients.add(deviceId);
-						else success = false;
+						if (result.getResult()) successfulRecipients.add(deviceId);
+						else {
+							unsuccessfulRecipients.add(recipient);
+							messageResult = MessageResult.NOTIFICATION_FAILURE;
+						}
 					}
 				} else if (isTextFallbackEnabled && recipient.hasPhones()) {
 					textMessageRecipients.add(recipient);
 				} else {
 					unsuccessfulRecipients.add(recipient);
+					messageResult = MessageResult.NOTIFICATION_FAILURE;
 				}
 			} catch (IOException e) {
-				success = false;
+				messageResult = MessageResult.NOTIFICATION_FAILURE;
 			}
 			
 		}
 
 		// Send text message to recipients who are unregistered, if any
+		MessageResult smsMessageResult = MessageResult.SUCCESS;
 		int numTextRecipients = textMessageRecipients.size();
 		if (numTextRecipients > 0) {
 			SendTextMessageTask textTask = new SendTextMessageTask(activity, place);
 			textTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, textMessageRecipients.toArray(new Person[numTextRecipients]));
 			try {
-				smsMessageResult = textTask.get();
+				boolean temp = textTask.get();
+				if (!temp) smsMessageResult = MessageResult.SMS_FAILURE;
 			} catch (InterruptedException e) {
-				return false;
+				smsMessageResult = MessageResult.SMS_FAILURE;
 			} catch (ExecutionException e) {
-				return false;
+				smsMessageResult = MessageResult.SMS_FAILURE;
 			}
-		}
+		} 
+		messageResult = messageResult.or(smsMessageResult);
 		
 		// Update lastContacted of all successful recipient devices in sharedprefs
 		// Maps each device ID or phone number to the last contact time
@@ -134,46 +141,56 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		}
 		editor.commit();
 
-		return success;
+		return messageResult;
 	}
 
 	/**
 	 * Called after the task finishes.
 	 */
 	@Override
-	protected void onPostExecute(Boolean result) {
+	protected void onPostExecute(MessageResult result) {
 		pDialog.dismiss();
 		
-		// Show dialog displaying unsuccessful recipients' names, if any
-		if (unsuccessfulRecipients.size() > 0) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-			builder.setTitle("Cannot send message");
-			builder.setCancelable(false);
-			
-			String recipientsString = "";
-			for (Person p : unsuccessfulRecipients) recipientsString += "\n" + p.toString();
-			builder.setMessage(activity.getString(R.string.notification_response_failure_prompt) + recipientsString);
-			builder.setPositiveButton(activity.getString(R.string.ok), null);
-			builder.setNegativeButton(activity.getString(R.string.cancel), null);
-			builder.create().show();
-		}
-		
-		// Display result of sending text messages if there was a failure
-		if (!smsMessageResult) 
-			Toast.makeText(activity, activity.getString(R.string.sms_response_failure), Toast.LENGTH_SHORT).show();
-
-		// Send was successful
-		if (result) {
+		switch (result) {
+		case SUCCESS:
 			Toast.makeText(activity, activity.getString(R.string.notification_response_sent), Toast.LENGTH_SHORT).show();
-			
+
 			// Launch back to NearbyPlacesActivity then close this activity
 			Intent intent = new Intent(activity, NearbyPlacesActivity.class);
 			activity.startActivity(intent);
 			activity.finish();
-		} else {
-			// Send was unsuccessful
-			Toast.makeText(activity, "Unable to send message. Please try again soon.", Toast.LENGTH_LONG).show();
+			break;
+		case NOTIFICATION_FAILURE:
+			// Send was unsuccessful - show unsuccessful recipients' names
+			displayUnsuccessfulRecipients(unsuccessfulRecipients);
+			break;
+		case SMS_FAILURE:
+			// Couldn't send text message - display toast informing the user
+			Toast.makeText(activity, activity.getString(R.string.sms_response_failure), Toast.LENGTH_SHORT).show();
+			break;
+		case FAILURE:
+			displayUnsuccessfulRecipients(unsuccessfulRecipients);
+			Toast.makeText(activity, activity.getString(R.string.sms_response_failure), Toast.LENGTH_SHORT).show();
+			break;
+		default:
+			break;
 		}
+		
+	}
+	
+	/**
+	 * Displays a dialog with the unsuccessful recipients' names
+	 */
+	private void displayUnsuccessfulRecipients(ArrayList<Person> personList) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		builder.setTitle("Cannot send message");
+		builder.setCancelable(false);
+		
+		String recipientsString = "";
+		for (Person p : personList) recipientsString += "\n" + p.toString();
+		builder.setMessage(activity.getString(R.string.notification_response_failure_prompt) + recipientsString);
+		builder.setPositiveButton(activity.getString(R.string.ok), null);
+		builder.create().show();
 	}
 	
 	/**
@@ -204,7 +221,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		
 		for (String phone : person.getPhones()) {
 			DeviceInfo matchedPhone = deviceInfoEndpoint.findDeviceByPhone(phone).execute();
-			if (matchedPhone != null) {
+			if (matchedPhone != null && matchedPhone.getDeviceRegistrationID() != null) {
 				String regId = matchedPhone.getDeviceRegistrationID();
 				regIds.add(regId);
 				editor.putString(Constants.SHARED_PREFERENCES_CONTACT_PHONE_PREFIX + phone, regId);
@@ -212,7 +229,7 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		}
 		for (String email : person.getEmails()) {
 			CollectionResponseDeviceInfo matchedEmails = deviceInfoEndpoint.findDevicesByEmail(email).execute();
-			if (matchedEmails != null) {
+			if (matchedEmails != null && matchedEmails.getItems() != null && matchedEmails.getItems().size() > 0) {
 				HashSet<String> matchedEmailDeviceIds = new HashSet<String>();
 				for (DeviceInfo matchedEmail : matchedEmails.getItems()) {
 					String regId = matchedEmail.getDeviceRegistrationID();
@@ -226,5 +243,34 @@ public class SendMessageTask extends AsyncTask<Person, Void, Boolean> {
 		
 		if (regIds.size() == 0) return null;
 		return regIds;
+	}
+	
+	/**
+	 * Enumeration class to represent the result of sending a message.
+	 * 
+	 * @author neenaparikh
+	 *
+	 */
+	protected enum MessageResult {
+		SUCCESS, SMS_FAILURE, NOTIFICATION_FAILURE, FAILURE;
+		
+		/**
+		 * An "or" operation to compare two MessageResults
+		 * 
+		 * @param other
+		 * @return
+		 */
+		protected MessageResult or(MessageResult other) {
+			if (this.equals(SUCCESS)) return other;
+			else if (other.equals(SUCCESS)) return this;
+			else if (this.equals(FAILURE) || other.equals(FAILURE)) return FAILURE;
+			else if (this.equals(NOTIFICATION_FAILURE)) {
+				if (other.equals(NOTIFICATION_FAILURE)) return NOTIFICATION_FAILURE;
+				else return FAILURE;
+			} else if (this.equals(SMS_FAILURE)) {
+				if (other.equals(SMS_FAILURE)) return SMS_FAILURE;
+				else return FAILURE;
+			} else return FAILURE;
+		}
 	}
 }

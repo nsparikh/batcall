@@ -62,54 +62,6 @@ public class DeviceInfoEndpoint {
 	}
 	
 	/**
-	 * Finds the devices with the given phone numbers.
-	 * @param user the authenticated user
-	 * @param phoneListString The given phone numbers in a single string, separated by commas
-	 * @return DeviceInfo objects associated with the phone number, or null if there are none.
-	 * 	These DeviceInfo objects do not contain all information from the datastore, but rather
-	 * 	just their keys and associated phone numbers because that is all the information we need.
-	 * @throws OAuthRequestException 
-	 */
-	@ApiMethod(name = "findDevicesByPhoneList")
-	public CollectionResponse<DeviceInfo> findDevicesByPhoneList(User user, @Named("phoneListString") String phoneListString) 
-			throws OAuthRequestException {
-		if (user == null) {
-			throw new OAuthRequestException("User is not authenticated");
-		}
-		
-		if (phoneListString == null || phoneListString.length() == 0) return null;
-		
-		String[] phones = phoneListString.split(",");
-		
-		List<DeviceInfo> resultList = new ArrayList<DeviceInfo>();
-		EntityManager  mgr = getEntityManager();
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		try {
-			// Iterate through each phone number and query the datastore individually
-			for (String phone : phones) {
-				
-				// Create filter on phone number and prepare query 
-				Filter phoneFilter = new FilterPredicate("phoneNumber", FilterOperator.EQUAL, phone);
-				PreparedQuery preparedQuery = datastore.prepare(new Query("DeviceInfo").setFilter(phoneFilter).setKeysOnly());
-				Entity result = preparedQuery.asSingleEntity();
-				if (result != null) {
-					// If we've found a match, create a filler DeviceInfo object to hold the ID and phone number
-					DeviceInfo matchedPhoneDevice = new DeviceInfo();
-					matchedPhoneDevice.setPhoneNumber(phone);
-					matchedPhoneDevice.setDeviceRegistrationID(result.getKey().getName());
-					resultList.add(matchedPhoneDevice);
-				}
-			}
-		} finally {
-			mgr.close();
-		}
-		
-
-		if (resultList.size() == 0) return null;
-		return CollectionResponse.<DeviceInfo> builder().setItems(resultList).build();
-	}
-	
-	/**
 	 * Finds the device with the given phone number
 	 * @param phone the given phone number
 	 * @return a DeviceInfo object with the phone number and associated ID, or null if there is none
@@ -123,7 +75,6 @@ public class DeviceInfoEndpoint {
 		
 		if (phone == null || phone.length() == 0) return null;
 		
-		List<DeviceInfo> resultList = new ArrayList<DeviceInfo>();
 		EntityManager  mgr = getEntityManager();
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		try {
@@ -136,64 +87,13 @@ public class DeviceInfoEndpoint {
 				DeviceInfo matchedPhoneDevice = new DeviceInfo();
 				matchedPhoneDevice.setPhoneNumber(phone);
 				matchedPhoneDevice.setDeviceRegistrationID(result.getKey().getName());
-				resultList.add(matchedPhoneDevice);
-			}
+				return matchedPhoneDevice;
+			} else return null;
 		} finally {
 			mgr.close();
 		}
-		
-
-		if (resultList.size() == 0) return null;
-		return resultList.get(0);
 	}
 	
-	/**
-	 * Finds the devices with the given email addresses.
-	 * @param user the authenticated user
-	 * @param emailListString The given email addresses in a single string, separated by commas
-	 * @return The DeviceInfo objects associated with the phone number, or null if there are none.
-	 * 	These DeviceInfo objects do not contain all information from the datastore, but rather
-	 * 	just their keys and associated email addresses because that is all the information we need.
-	 * @throws OAuthRequestException 
-	 */
-	@ApiMethod(name = "findDevicesByEmailList")
-	public CollectionResponse<DeviceInfo> findDevicesByEmailList(User user, @Named("emailListString") String emailListString) 
-			throws OAuthRequestException {
-		if (user == null) {
-			throw new OAuthRequestException("User is not authenticated");
-		}
-		
-		if (emailListString == null || emailListString.length() == 0) return null;
-		
-		String[] emails = emailListString.split(",");
-		
-		List<DeviceInfo> resultList = new ArrayList<DeviceInfo>();
-		EntityManager  mgr = getEntityManager();
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		try {
-			// Iterate through each email address and query the datastore individually
-			for (String email : emails) {
-				// Create filter on email address and prepare query 
-				Filter emailFilter = new FilterPredicate("userEmail", FilterOperator.EQUAL, email);
-				PreparedQuery preparedQuery = datastore.prepare(new Query("DeviceInfo").setFilter(emailFilter).setKeysOnly());
-				List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withLimit(5));
-				if (result != null && result.size() > 0) {
-					for (Entity e : result) {
-						// If we've found a match, create a filler DeviceInfo object to hold the ID and email
-						DeviceInfo matchedEmailDevice = new DeviceInfo();
-						matchedEmailDevice.setUserEmail(email);
-						matchedEmailDevice.setDeviceRegistrationID(e.getKey().getName());
-						resultList.add(matchedEmailDevice);
-					}
-				}
-			}
-		} finally {
-			mgr.close();
-		}
-
-		if (resultList.size() == 0) return null;
-		return CollectionResponse.<DeviceInfo> builder().setItems(resultList).build();
-	}
 	
 	/**
 	 * Finds the devices with the given email address

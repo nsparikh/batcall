@@ -108,7 +108,7 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 			// Show all contacts who are registered and those with phone numbers.
 			ArrayList<Person> displayList = new ArrayList<Person>();
 			for (Person p : allContacts) {
-				if (p.hasPhones() || personIsRegistered(p)) displayList.add(p);
+				if (p.hasPhones() || p.hasEmails()) displayList.add(p);
 			}
 			success = true;
 			return displayList;
@@ -267,25 +267,6 @@ public class LoadContactsTask extends AsyncTask<Boolean, Integer, ArrayList<Pers
 		editor.putStringSet(Constants.SHARED_PREFERENCES_SAVED_CONTACTS_KEY, new HashSet<String>(personStrings));
 		editor.commit();
 	}
-	
-	/**
-	 * Checks to see if any of the given person's phones or emails have any associated
-	 * registration IDs saved in SharedPrefs
-	 */
-	private boolean personIsRegistered(Person person) {
-		// First check phones
-		for (String phone : person.getPhones()) {
-			if (sharedPrefs.getString(Constants.SHARED_PREFERENCES_CONTACT_PHONE_PREFIX + phone, null) != null) 
-				return true;
-		}
-		
-		// Next check emails
-		for (String email : person.getEmails()) {
-			if (sharedPrefs.getStringSet(Constants.SHARED_PREFERENCES_CONTACT_EMAIL_PREFIX + email, null) != null) 
-				return true;
-		}
-		
-		return false;
-	}
+
 }
 

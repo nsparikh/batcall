@@ -80,6 +80,10 @@ public class Person implements Comparable<Person>, Parcelable {
 		this.emails = emails;
 		if (emails == null) this.emails = new ArrayList<String>();
 	}
+	
+	public boolean hasEmails() {
+		return (getEmails() != null && getEmails().size() > 0);
+	}
 
 	public ArrayList<String> getPhones() {
 		return phones;
@@ -88,6 +92,10 @@ public class Person implements Comparable<Person>, Parcelable {
 	public void setPhones(ArrayList<String> phones) {
 		this.phones = phones;
 		if (phones == null) this.phones = new ArrayList<String>();
+	}
+	
+	public boolean hasPhones() {
+		return (getPhones() != null && getPhones().size() > 0);
 	}
 
 	public Uri getPhotoUri() {
@@ -105,10 +113,6 @@ public class Person implements Comparable<Person>, Parcelable {
 
 	public void setLastContacted(long lastContacted) {
 		this.lastContacted = lastContacted;
-	}
-	
-	public boolean hasPhones() {
-		return (getPhones() != null && getPhones().size() > 0);
 	}
 	
 	public String toString() {

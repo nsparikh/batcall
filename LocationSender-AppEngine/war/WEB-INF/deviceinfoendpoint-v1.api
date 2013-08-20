@@ -27,26 +27,6 @@
   "ownerName" : "neenaparikh.com",
   "packagePath" : "locationsender",
   "methods" : {
-    "deviceinfoendpoint.findDevicesByEmailList" : {
-      "path" : "findDevicesByEmailList/{emailListString}",
-      "httpMethod" : "POST",
-      "scopes" : [ ],
-      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
-      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066-bnjprcsgqnma91angd05n0ijfq9nvj5t.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByEmailList",
-      "request" : {
-        "parameters" : {
-          "emailListString" : {
-            "type" : "string",
-            "required" : true
-          }
-        },
-        "body" : "empty"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
-    },
     "deviceinfoendpoint.insertDeviceInfo" : {
       "path" : "deviceinfo",
       "httpMethod" : "POST",
@@ -72,26 +52,6 @@
       "request" : {
         "parameters" : {
           "id" : {
-            "type" : "string",
-            "required" : true
-          }
-        },
-        "body" : "empty"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
-    },
-    "deviceinfoendpoint.findDevicesByPhoneList" : {
-      "path" : "findDevicesByPhoneList/{phoneListString}",
-      "httpMethod" : "POST",
-      "scopes" : [ ],
-      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
-      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066-bnjprcsgqnma91angd05n0ijfq9nvj5t.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByPhoneList",
-      "request" : {
-        "parameters" : {
-          "phoneListString" : {
             "type" : "string",
             "required" : true
           }
@@ -142,21 +102,6 @@
         "body" : "autoTemplate(backendResponse)"
       }
     },
-    "deviceinfoendpoint.updateDeviceInfo" : {
-      "path" : "deviceinfo",
-      "httpMethod" : "PUT",
-      "scopes" : [ ],
-      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
-      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066-bnjprcsgqnma91angd05n0ijfq9nvj5t.apps.googleusercontent.com" ],
-      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo",
-      "request" : {
-        "body" : "autoTemplate(backendRequest)",
-        "bodyName" : "resource"
-      },
-      "response" : {
-        "body" : "autoTemplate(backendResponse)"
-      }
-    },
     "deviceinfoendpoint.removeDeviceInfo" : {
       "path" : "deviceinfo/{id}",
       "httpMethod" : "DELETE",
@@ -176,25 +121,25 @@
       "response" : {
         "body" : "empty"
       }
+    },
+    "deviceinfoendpoint.updateDeviceInfo" : {
+      "path" : "deviceinfo",
+      "httpMethod" : "PUT",
+      "scopes" : [ ],
+      "audiences" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com" ],
+      "clientIds" : [ "655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com", "655975699066-bnjprcsgqnma91angd05n0ijfq9nvj5t.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo",
+      "request" : {
+        "body" : "autoTemplate(backendRequest)",
+        "bodyName" : "resource"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
     }
   },
   "descriptor" : {
     "schemas" : {
-      "CollectionResponse_DeviceInfo" : {
-        "id" : "CollectionResponse_DeviceInfo",
-        "type" : "object",
-        "properties" : {
-          "items" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "DeviceInfo"
-            }
-          },
-          "nextPageToken" : {
-            "type" : "string"
-          }
-        }
-      },
       "DeviceInfo" : {
         "id" : "DeviceInfo",
         "type" : "object",
@@ -228,14 +173,24 @@
             "type" : "string"
           }
         }
+      },
+      "CollectionResponse_DeviceInfo" : {
+        "id" : "CollectionResponse_DeviceInfo",
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "DeviceInfo"
+            }
+          },
+          "nextPageToken" : {
+            "type" : "string"
+          }
+        }
       }
     },
     "methods" : {
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByEmailList" : {
-        "response" : {
-          "$ref" : "CollectionResponse_DeviceInfo"
-        }
-      },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.insertDeviceInfo" : {
         "request" : {
           "$ref" : "DeviceInfo"
@@ -249,11 +204,6 @@
           "$ref" : "DeviceInfo"
         }
       },
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDevicesByPhoneList" : {
-        "response" : {
-          "$ref" : "CollectionResponse_DeviceInfo"
-        }
-      },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.findDeviceByPhone" : {
         "response" : {
           "$ref" : "DeviceInfo"
@@ -264,6 +214,8 @@
           "$ref" : "CollectionResponse_DeviceInfo"
         }
       },
+      "com.neenaparikh.locationsender.DeviceInfoEndpoint.removeDeviceInfo" : {
+      },
       "com.neenaparikh.locationsender.DeviceInfoEndpoint.updateDeviceInfo" : {
         "request" : {
           "$ref" : "DeviceInfo"
@@ -271,8 +223,6 @@
         "response" : {
           "$ref" : "DeviceInfo"
         }
-      },
-      "com.neenaparikh.locationsender.DeviceInfoEndpoint.removeDeviceInfo" : {
       }
     }
   }

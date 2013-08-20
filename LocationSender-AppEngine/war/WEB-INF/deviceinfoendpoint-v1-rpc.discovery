@@ -1,6 +1,6 @@
 {
  "kind": "discovery#rpcDescription",
- "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/yIYKDGL9GI9A1PO73E6QNZyhXok\"",
+ "etag": "\"nPbVolg1F8jpPe9kkErPtt8mpZE/0qJVAcvVR3x3dsJl8TI7SNt7tWI\"",
  "discoveryVersion": "v1",
  "id": "deviceinfoendpoint:v1",
  "name": "deviceinfoendpoint",
@@ -139,36 +139,6 @@
    },
    "parameterOrder": [
     "email"
-   ],
-   "returns": {
-    "$ref": "CollectionResponse_DeviceInfo"
-   }
-  },
-  "deviceinfoendpoint.findDevicesByEmailList": {
-   "id": "deviceinfoendpoint.findDevicesByEmailList",
-   "parameters": {
-    "emailListString": {
-     "type": "string",
-     "required": true
-    }
-   },
-   "parameterOrder": [
-    "emailListString"
-   ],
-   "returns": {
-    "$ref": "CollectionResponse_DeviceInfo"
-   }
-  },
-  "deviceinfoendpoint.findDevicesByPhoneList": {
-   "id": "deviceinfoendpoint.findDevicesByPhoneList",
-   "parameters": {
-    "phoneListString": {
-     "type": "string",
-     "required": true
-    }
-   },
-   "parameterOrder": [
-    "phoneListString"
    ],
    "returns": {
     "$ref": "CollectionResponse_DeviceInfo"
