@@ -17,7 +17,6 @@ public class Constants {
 	public static final String SHARED_PREFERENCES_LAST_CONTACTED_PREFIX = "last_contact_time_";
 	
 	// Crediential info
-	public static final int REQUEST_ACCOUNT_PICKER = 2;
 	public static final String CREDENTIAL_AUDIENCE = "server:client_id:655975699066-c4qfm3pbqol9vgu47qafsln27o9e7k8l.apps.googleusercontent.com";
 	
 	// Key for passing registration messages from GCMIntentService to Activities

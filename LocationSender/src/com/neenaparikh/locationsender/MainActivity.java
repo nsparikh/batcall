@@ -11,10 +11,13 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.neenaparikh.locationsender.util.Constants;
 
 
 public class MainActivity extends Activity {
+	private static final int REQUEST_ACCOUNT_PICKER = 2;
+	
 	private SharedPreferences sharedPrefs;
 	private GoogleAccountCredential credential;
 
@@ -58,7 +61,19 @@ public class MainActivity extends Activity {
 		progressSpinner = ProgressSpinner.show(this, null, null, true, false);
 		signupButton.setVisibility(View.GONE);
 
-		// Register the device
+		try {
+			register();
+		} catch (GooglePlayServicesAvailabilityIOException e) {
+			// This means Google Play Services is out of date
+			Toast.makeText(this, getString(R.string.out_of_date_message), Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	/**
+	 * Registers with GCM
+	 * @throws GooglePlayServicesAvailabilityIOException
+	 */
+	private void register() throws GooglePlayServicesAvailabilityIOException {
 		GCMIntentService.register(getApplicationContext());
 	}
 
@@ -70,7 +85,7 @@ public class MainActivity extends Activity {
 		super.onActivityResult(requestCode, resultCode, data);
 
 		switch (requestCode) {
-		case Constants.REQUEST_ACCOUNT_PICKER:
+		case REQUEST_ACCOUNT_PICKER:
 			if (data != null && data.getExtras() != null) {
 				String accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
 				if (accountName != null) {
@@ -141,7 +156,7 @@ public class MainActivity extends Activity {
 	 */
 	public void onClickSignup(View view) {
 		// request an account by showing an account picker
-		startActivityForResult(credential.newChooseAccountIntent(), Constants.REQUEST_ACCOUNT_PICKER);
+		startActivityForResult(credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
 	}
 
 }

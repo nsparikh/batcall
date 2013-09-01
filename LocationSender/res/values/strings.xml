@@ -38,6 +38,11 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     
+    <string name="out_of_date_message">
+        It looks like your system is out of date. Please install any pending system updates 
+        and relaunch BatCall.
+    </string>
+    
     <string name="default_nearby_list_item_name">Place Name</string>
     <string name="default_current_address">Current Address</string>
     <string name="powered_by_google">Powered by Google</string>
