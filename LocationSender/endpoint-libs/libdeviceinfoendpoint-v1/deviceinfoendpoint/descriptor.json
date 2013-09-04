@@ -1,13 +1,13 @@
 {
   "files": [
     {
-      "downloadUrl": "/downloads/deviceinfoendpoint/v1/20130820172817/java/1.15.0-rc/locationsender-deviceinfoendpoint-v1-20130820172817-java-1.15.0-rc-sources.jar", 
-      "path": "locationsender-deviceinfoendpoint-v1-20130820172817-java-1.15.0-rc-sources.jar", 
+      "downloadUrl": "/downloads/deviceinfoendpoint/v1/20130904192941/java/1.15.0-rc/neenaparikh.com-deviceinfoendpoint-v1-20130904192941-java-1.15.0-rc-sources.jar", 
+      "path": "neenaparikh.com-deviceinfoendpoint-v1-20130904192941-java-1.15.0-rc-sources.jar", 
       "type": "source", 
-      "timestamp": "2013-08-20 17:28"
+      "timestamp": "2013-09-04 19:29"
     }, 
     {
-      "path": "locationsender-deviceinfoendpoint-v1-20130820172817-java-1.15.0-rc.jar.properties", 
+      "path": "neenaparikh.com-deviceinfoendpoint-v1-20130904192941-java-1.15.0-rc.jar.properties", 
       "type": "android.properties"
     }
   ], 
@@ -16,11 +16,11 @@
   "moduleName": "com.neenaparikh.locationsender", 
   "name": "deviceinfoendpoint", 
   "language": "java", 
-  "ownerDomain": "appspot.com", 
+  "ownerDomain": "neenaparikh.com", 
   "maven": {
-    "group_id": "com.appspot", 
+    "group_id": "com.neenaparikh", 
     "artifact_id": "locationsender-deviceinfoendpoint", 
-    "version": "v1-SNAPSHOT"
+    "version": "v1-1.15.0-rc-SNAPSHOT"
   }, 
   "version": "v1", 
   "ownerName": "neenaparikh.com", 
@@ -698,7 +698,7 @@
     }
   ], 
   "language_version": "1.15.0-rc", 
-  "revision": 20130820172817, 
+  "revision": 20130904192941, 
   "id": "deviceinfoendpoint:v1", 
   "modulePath": "com/neenaparikh/locationsender"
 }
